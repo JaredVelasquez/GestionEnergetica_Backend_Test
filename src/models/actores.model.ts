@@ -21,11 +21,11 @@ export class Actores extends Entity {
   codigo: string;
 
   @property({
-    type: 'boolean',
+    type: 'string',
     required: true,
-    mssql: {columnName: 'TipoActor', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'TipoActor', dataType: 'varchar', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
-  tipoActor: boolean;
+  tipoActor: string;
 
   @property({
     type: 'string',
@@ -40,12 +40,6 @@ export class Actores extends Entity {
     mssql: {columnName: 'Observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   observacion?: string;
-
-  @property({
-    type: 'boolean',
-    mssql: {columnName: 'Estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  estado?: boolean;
 
   // Define well-known properties here
 

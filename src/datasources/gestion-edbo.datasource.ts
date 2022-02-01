@@ -4,10 +4,10 @@ import {juggler} from '@loopback/repository';
 const config = {
   name: 'GestionEDBO',
   connector: 'mssql',
-  url: 'mssql://jared:1234@DESKTOP-914IUVT/InhdelvaDB',
-  host: 'DESKTOP-914IUVT',
+  url: 'mssql://sa:1234@IT/InhdelvaDB',
+  host: 'DESKTOP-SPN633L',
   port: 1433,
-  user: 'jared',
+  user: 'sa',
   password: '1234',
   database: 'InhdelvaDB'
 };

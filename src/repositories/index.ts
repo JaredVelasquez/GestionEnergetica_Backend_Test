@@ -1,3 +1,5 @@
 export * from './actores.repository';
-export * from './usercredentials.repository';
+export * from './credenciales.repository';
+export * from './roles.repository';
 export * from './usuario.repository';
+

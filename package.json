@@ -33,7 +33,7 @@
     "openapi-spec": "node ./dist/openapi-spec",
     "prestart": "npm run rebuild",
     "start": "node -r source-map-support/register .",
-    "dev": "nodemon -r source-map-support/register .",
+    "dev": "nodemon npm start",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
     "rebuild": "npm run clean && npm run build"
   },
@@ -50,6 +50,7 @@
     "!*/__tests__"
   ],
   "dependencies": {
+    "@loopback/authentication": "^8.0.1",
     "@loopback/boot": "^4.0.1",
     "@loopback/core": "^3.0.1",
     "@loopback/repository": "^4.0.1",
@@ -59,6 +60,7 @@
     "crypto-js": "^4.1.1",
     "jsonwebtoken": "^8.5.1",
     "loopback-connector-mssql": "^3.8.0",
+    "parse-bearer-token": "^1.0.1",
     "tslib": "^2.0.0"
   },
   "devDependencies": {

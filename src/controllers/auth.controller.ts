@@ -12,8 +12,10 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
 import {UsuarioRepository} from '../repositories';
+import {LoginService} from '../services/login.service';
 import {Usuario} from './../models/usuario.model';
 import {ActoresRepository} from './../repositories/actores.repository';
 //import {LoginService} from './../services/login.service';
@@ -27,8 +29,8 @@ export class AuthController {
     private actoresRepository: ActoresRepository,
     @service(RegisterService)
     private registerService: RegisterService,
-    // @service(LoginService)
-    // private loginService: LoginService
+    @service(LoginService)
+    private loginService: LoginService
 
   ) { }
 
@@ -42,15 +44,15 @@ export class AuthController {
     return this.registerService.RegisterUser(registerUser);
   }
 
-  // @post('/login')
-  // @response(200, {
-  //   description: 'Usuario model instance',
-  // })
-  // async Login(
-  //   @requestBody() loginInterface: LoginInterface
-  // ): Promise<any> {
-  //   return this.loginService.Login(loginInterface);
-  // }
+  @post('/login')
+  @response(200, {
+    description: 'Usuario model instance',
+  })
+  async Login(
+    @requestBody() loginInterface: LoginInterface
+  ): Promise<any> {
+    return this.loginService.Login(loginInterface);
+  }
 
   @get('/usuarios/count')
   @response(200, {

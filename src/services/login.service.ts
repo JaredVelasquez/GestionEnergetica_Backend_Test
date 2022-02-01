@@ -1,50 +1,39 @@
-// import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
-// import {repository} from '@loopback/repository';
-// import {HttpErrors} from '@loopback/rest';
-// import {LoginInterface} from './../core/interfaces/models/Login.interface';
-// import {UsercredentialsRepository} from './../repositories/usercredentials.repository';
-// import {AuthService} from './auth.service';
+import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
+import {repository} from '@loopback/repository';
+import {HttpErrors} from '@loopback/rest';
+import {CredencialesRepository, UsuarioRepository} from '../repositories';
+import {LoginInterface} from './../core/interfaces/models/Login.interface';
+import {AuthService} from './auth.service';
 
-// @injectable({scope: BindingScope.TRANSIENT})
-// export class LoginService {
+@injectable({scope: BindingScope.TRANSIENT})
+export class LoginService {
 
-//   constructor(
-//     @repository(UsercredentialsRepository)
-//     private usercredentialsRepository: UsercredentialsRepository,
-//     @service(AuthService)
-//     private authService: AuthService
-//   ) {
-//   }
+  constructor(
+    @repository(CredencialesRepository)
+    private credencialesRepository: CredencialesRepository,
+    @repository(UsuarioRepository)
+    private usuarioRepository: UsuarioRepository,
+    @service(AuthService)
+    private authService: AuthService
+  ) {
+  }
 
-//   async Login(loginInterface: LoginInterface) {
-//     console.log(loginInterface);
+  async Login(loginInterface: LoginInterface) {
+    if (!loginInterface)
+      throw new HttpErrors[401]("No puede mandar los campos del Login vacios.");
+    let credentialExist = await this.credencialesRepository.findOne({where: {username: loginInterface.identificator} || {email: loginInterface.identificator}});
+    if (!credentialExist)
+      throw new HttpErrors[401]("Este usuario no esta registrado.");
+    let user = await this.usuarioRepository.findOne({where: {correo: credentialExist.correo}})
 
-//     if (!loginInterface)
-//       throw new HttpErrors[401]("No puede mandar los campos del Login vacios.");
-//     let userExist = await this.usercredentialsRepository.findOne({where: {username: loginInterface.identificator} || {email: loginInterface.identificator}});
-//     if (!userExist)
-//       throw new HttpErrors[401]("Este usuario no esta registrado.");
-//     console.log(userExist);
+    if (!user)
+      throw new HttpErrors[401]("Usuario no encontrado.");
 
-//     let token = this.authService.createToken(userExist);
-//     console.log(token);
+    let token = this.authService.createToken(credentialExist, user);
 
-//     if (!token)
-//       throw new HttpErrors[404]("El token no pudo ser creado");
+    if (!token)
+      throw new HttpErrors[404]("El token no pudo ser creado");
 
-//     return token;
-//   }
-//   async ExistUser(identificator: any) {
-//     if (!identificator)
-//       throw new HttpErrors[401]("No existe identificador");
-
-//     let user = await this.usercredentialsRepository.findOne({where: {email: identificator}});
-
-//     if (!user)
-//       user = await this.usercredentialsRepository.findOne({where: {username: identificator}});
-//     if (!user)
-//       throw new HttpErrors[401]("Este usuario no existe");
-
-//     return user;
-//   }
-// }
+    return token;
+  }
+}
