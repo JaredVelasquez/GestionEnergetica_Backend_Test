@@ -1,14 +1,14 @@
 import {BindingScope, injectable, service} from '@loopback/core';
 import {HttpErrors} from '@loopback/rest';
-import {AuthService} from '.';
+import {JWTService} from '.';
 
 const localStorage = require('local-storage');
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class LocalStorage {
   constructor(
-    @service(AuthService)
-    private authService: AuthService
+    @service(JWTService)
+    private jwtService: JWTService
   ) {
 
   }
@@ -34,7 +34,7 @@ export class LocalStorage {
     if (!sessionToken)
       throw new HttpErrors[401]("No tiene una sesion iniciada");
 
-    const decodedToken = this.authService.VerifyToken(sessionToken);
+    const decodedToken = this.jwtService.VerifyToken(sessionToken);
 
     if (decodedToken.exp > Date.now()) {
       return true

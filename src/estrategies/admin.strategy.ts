@@ -7,7 +7,7 @@ import parseBearerToken from 'parse-bearer-token';
 import {ParsedQs} from 'qs';
 import {token} from '../core/interfaces/models/token.interface';
 import {Rol} from '../core/library/rol.library';
-import {AuthService, EstrategyService} from '../services';
+import {EstrategyService, JWTService} from '../services';
 
 
 export class AdministradorStrategy implements AuthenticationStrategy {
@@ -16,8 +16,8 @@ export class AdministradorStrategy implements AuthenticationStrategy {
   constructor(
     @service(EstrategyService)
     public strategyService: EstrategyService,
-    @service(AuthService)
-    private authService: AuthService
+    @service(JWTService)
+    private jwtService: JWTService
   ) {
 
   }
@@ -26,7 +26,7 @@ export class AdministradorStrategy implements AuthenticationStrategy {
     if (!token) {
       throw new HttpErrors[401]("No existe un token en la solicitud.")
     }
-    const decodedToken: token = this.authService.VerifyToken(token);
+    const decodedToken: token = this.jwtService.VerifyToken(token);
     const profileData = this.strategyService.autheticate(decodedToken, Rol.Administrator);
 
     return profileData;

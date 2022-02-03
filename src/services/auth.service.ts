@@ -1,103 +1,101 @@
-import {BindingScope, injectable, service} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
-import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
-import {keys} from "../env/interfaces/Servicekeys.interface";
-import {CodigoVerificacion, Credenciales, Usuario} from '../models';
-import {CodigoVerificacionRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
-import {UserService} from "../services/user.service";
+import {LoginInterface} from '../core/interfaces/models/Login.interface';
+import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
+import {Actores, Credenciales, Usuario} from '../models';
+import {ActoresRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
 import {EncriptDecryptService} from './encript-decrypt.service';
-const jsonwebtoken = require('jsonwebtoken');
+import {JWTService} from './jwt.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
-  userService: UserService;
   constructor(
     @repository(CredencialesRepository)
     private credencialesRepository: CredencialesRepository,
+    @repository(UsuarioRepository)
+    private usuarioRepository: UsuarioRepository,
+    @service(JWTService)
+    private jwtService: JWTService,
+    @repository(ActoresRepository)
+    private actoresRepository: ActoresRepository,
     @service(EncriptDecryptService)
     private encriptDecryptService: EncriptDecryptService,
-    @repository(CodigoVerificacionRepository)
-    private codigoVerificacionRepository: CodigoVerificacionRepository,
-    @repository(UsuarioRepository)
-    private usuarioRepository: UsuarioRepository
+
   ) {
   }
 
+  async Login(loginInterface: LoginInterface) {
 
-  createToken(credentials: Credenciales, user: Usuario) {
-    try {
-      let token = jsonwebtoken.sign({
-        exp: keys.TOKEN_EXPIRATION_TIME,
-        data: {
-          UserID: credentials.id,
-          UserNAME: credentials.username,
-          Role: user.rolid
-        }
-      }, keys.JWT_SECRET_KEY);
-      return token;
+    if (!loginInterface)
+      throw new HttpErrors[401]("No puede mandar los campos del Login vacios.");
+    console.log(loginInterface);
 
-    } catch (error) {
-      console.log("Error al generar el token: ", error);
+    let matchCredencials = await this.jwtService.IdentifyToken(loginInterface)
+    console.log(matchCredencials);
 
-    }
-  }
+    if (!matchCredencials)
+      throw new HttpErrors[401]("Correo o contrasena invalidos");
 
-  VerifyToken(token: string) {
+    let user = await this.usuarioRepository.findOne({where: {correo: loginInterface.identificator}});
+
+    let token = await this.jwtService.createToken(matchCredencials, user);
+
     if (!token)
-      throw new HttpErrors[401]("Token vacio")
-    let decoded = jsonwebtoken.verify(token, keys.JWT_SECRET_KEY);
+      throw new HttpErrors[401]("El token no pudo ser creado");
 
-    if (decoded)
-      return decoded;
-    else
-      throw new HttpErrors[401]("Token invalido");
+    return token;
+
+
   }
 
-  async IdentifyToken(identificador: string, password: string): Promise<Credenciales | false> {
-    let user = await this.credencialesRepository.findOne({where: {correo: identificador} || {username: identificador}});
+  async RegisterUser(registerUser: RegisterUserInterface): Promise<boolean | any> {
+    let modelActor: Actores = new Actores;
+    let modelUser: Usuario = new Usuario;
+    let modelCredentials: Credenciales = new Credenciales;
 
-    if (user) {
-      let cryptPass = this.encriptDecryptService.Encrypt(password);
-      if (user.passwordHash == cryptPass) {
-        return user;
-      }
-    }
-    return false;
-  }
+    let userExist = await this.credencialesRepository.findOne({where: {correo: registerUser.email}});
 
-  async ResetPassword(identificador: string, newpassword: string): Promise<string | false> {
-    let user = await this.credencialesRepository.findOne({where: {correo: identificador} || {username: identificador}});
-    if (user) {
-      newpassword = this.encriptDecryptService.Encrypt(newpassword);
-      user.passwordHash = newpassword;
-      this.credencialesRepository.replaceById(user.id, user);
-      return newpassword;
-    }
-    return false;
-  }
+    if (!userExist)
+      userExist = await this.credencialesRepository.findOne({where: {username: registerUser.username}});
 
-  async generateCode(request: gCodeInterface) {
-    const newCode = new CodigoVerificacion;
-    console.log(request.identificator);
+    console.log(userExist);
 
-    let credentialsExist = await this.credencialesRepository.findOne({where: {correo: request.identificator}});
+    if (userExist)
+      throw new HttpErrors[401]("Estas correo o nombre de usuario ya esta registrado.");
 
-    if (!credentialsExist)
-      throw new HttpErrors[402]("Usuario no valido")
+    let estado = true;
+    modelActor.codigo = registerUser.code;
+    modelActor.tipoActor = registerUser.userType;
 
-    newCode.exp = Date.now() + keys.ONE_MINUTE_MILLISECONDS + '';
-    newCode.codigo = keys.GENERATE_NEW_VERIFY_CODE;
-    let user = await this.usuarioRepository.findOne({where: {correo: request.identificator}});
-    if (!user?.estado)
-      throw new HttpErrors[402]("Este usuario esta desactivado");
+    let newActor = await this.actoresRepository.create(modelActor);
+    if (!newActor)
+      throw new HttpErrors[401]("No se pudo crear el actor");
 
-    newCode.userId = user.id;
+    modelUser.actorId = newActor.id;
+    modelUser.rolid = registerUser.roleId;
+    modelUser.nombre = registerUser.firstName;
+    modelUser.apellido = registerUser.lastName;
+    modelUser.correo = registerUser.email;
+    modelUser.estado = estado;
 
-    return this.codigoVerificacionRepository.create(newCode);
+    let newUser = await this.usuarioRepository.create(modelUser);
+    console.log(newUser);
+    if (!newUser)
+      throw new HttpErrors[401]("No se pudo crear el Usuario");
 
+    let newHash = this.encriptDecryptService.Encrypt(registerUser.password);
+
+    if (!newHash)
+      throw new HttpErrors[401]("No se pudo crear el Hash");
+
+    modelCredentials.correo = registerUser.email;
+    modelCredentials.username = registerUser.username;
+    modelCredentials.hash = newHash;
+
+    let newCredentials = await this.credencialesRepository.create(modelCredentials);
+
+    return true;
   }
 
 }
-
-

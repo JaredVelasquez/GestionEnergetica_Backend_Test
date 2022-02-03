@@ -16,8 +16,7 @@ import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
 import {UsuarioRepository} from '../repositories';
-import {AuthService} from '../services';
-import {LoginService} from '../services/login.service';
+import {AuthService, JWTService} from '../services';
 import {Usuario} from './../models/usuario.model';
 import {ActoresRepository} from './../repositories/actores.repository';
 //import {LoginService} from './../services/login.service';
@@ -31,8 +30,8 @@ export class AuthController {
     private actoresRepository: ActoresRepository,
     @service(RegisterService)
     private registerService: RegisterService,
-    @service(LoginService)
-    private loginService: LoginService,
+    @service(JWTService)
+    private jwtService: JWTService,
     @service(AuthService)
     private authService: AuthService
 
@@ -45,7 +44,7 @@ export class AuthController {
   async RegisterUser(
     @requestBody() registerUser: RegisterUserInterface
   ): Promise<any> {
-    return this.registerService.RegisterUser(registerUser);
+    return this.authService.RegisterUser(registerUser);
   }
 
   @post('/login')
@@ -55,7 +54,7 @@ export class AuthController {
   async Login(
     @requestBody() loginInterface: LoginInterface
   ): Promise<any> {
-    return this.loginService.Login(loginInterface);
+    return this.authService.Login(loginInterface);
   }
 
   @post('/generate-verify-code')
@@ -65,7 +64,7 @@ export class AuthController {
   async GenerateVerifyCode(
     @requestBody() gCode: gCodeInterface
   ): Promise<any> {
-    return await this.authService.generateCode(gCode);
+    return await this.jwtService.generateCode(gCode);
   }
 
   @get('/usuarios/count')
