@@ -37,6 +37,7 @@ export class AuthController {
 
   ) { }
 
+
   @post('/register')
   @response(200, {
     description: 'Usuario model instance',
