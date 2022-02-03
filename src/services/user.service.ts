@@ -12,12 +12,7 @@ export class UserService {
     if (!identificator)
       throw new HttpErrors[401]("No existe identificador");
 
-    let user = await this.credencialesRepository.findOne({where: {email: identificator}});
-
-    if (!user)
-      user = await this.credencialesRepository.findOne({where: {username: identificator}});
-    if (!user)
-      throw new HttpErrors[401]("Este usuario no existe");
+    let user = await this.credencialesRepository.findOne({where: {email: identificator} || {username: identificator}});
 
     return user;
   }

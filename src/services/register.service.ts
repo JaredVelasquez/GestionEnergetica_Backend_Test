@@ -1,6 +1,7 @@
 import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
+import {UserService} from '.';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
 import {CredencialesRepository} from '../repositories';
 import {ActoresRepository} from './../repositories/actores.repository';
@@ -9,6 +10,7 @@ import {EncriptDecryptService} from './encript-decrypt.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class RegisterService {
+  userService: UserService;
   constructor(
     @repository(UsuarioRepository)
     private usuarioRepository: UsuarioRepository,
@@ -18,10 +20,13 @@ export class RegisterService {
     private credencialesRepository: CredencialesRepository,
     @service(EncriptDecryptService)
     private encriptDecryptService: EncriptDecryptService
-
   ) { }
 
   async RegisterUser(registerUser: RegisterUserInterface): Promise<boolean | any> {
+    let userExist = await this.credencialesRepository.findOne({where: {email: registerUser.email} || {username: registerUser.email}});
+
+    if (userExist)
+      throw new HttpErrors[401]("Estas correo o nombre de usuario ya esta registrado.");
 
     let estado = true;
     let modelActor: any = {
@@ -31,7 +36,7 @@ export class RegisterService {
     let newActor = await this.actoresRepository.create(modelActor);
     console.log(newActor);
     if (!newActor)
-      throw new HttpErrors[401]("No se pudo crear el actor")
+      throw new HttpErrors[401]("No se pudo crear el actor");
     let modelUser: any = {
       actorId: newActor.id,
       rolid: registerUser.roleId,
@@ -43,12 +48,12 @@ export class RegisterService {
     let newUser = await this.usuarioRepository.create(modelUser);
     console.log(newUser);
     if (!newUser)
-      throw new HttpErrors[401]("No se pudo crear el Usuario")
+      throw new HttpErrors[401]("No se pudo crear el Usuario");
 
     let newHash = this.encriptDecryptService.Encrypt(registerUser.password);
 
     if (!newHash)
-      throw new HttpErrors[401]("No se pudo crear el Hash")
+      throw new HttpErrors[401]("No se pudo crear el Hash");
 
     let modelCredentials: any = {
       correo: registerUser.email,
@@ -61,4 +66,6 @@ export class RegisterService {
 
     return true;
   }
+
+
 }

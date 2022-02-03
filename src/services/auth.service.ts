@@ -1,10 +1,10 @@
 import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
-import {token} from '../core/interfaces/models/token.interface';
+import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
 import {keys} from "../env/interfaces/Servicekeys.interface";
-import {Credenciales, Usuario} from '../models';
-import {CredencialesRepository} from '../repositories';
+import {CodigoVerificacion, Credenciales, Usuario} from '../models';
+import {CodigoVerificacionRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
 import {UserService} from "../services/user.service";
 import {EncriptDecryptService} from './encript-decrypt.service';
 const jsonwebtoken = require('jsonwebtoken');
@@ -16,7 +16,11 @@ export class AuthService {
     @repository(CredencialesRepository)
     private credencialesRepository: CredencialesRepository,
     @service(EncriptDecryptService)
-    private encriptDecryptService: EncriptDecryptService
+    private encriptDecryptService: EncriptDecryptService,
+    @repository(CodigoVerificacionRepository)
+    private codigoVerificacionRepository: CodigoVerificacionRepository,
+    @repository(UsuarioRepository)
+    private usuarioRepository: UsuarioRepository
   ) {
   }
 
@@ -42,8 +46,7 @@ export class AuthService {
   VerifyToken(token: string) {
     if (!token)
       throw new HttpErrors[401]("Token vacio")
-    let decoded: token = jsonwebtoken.verify(token, keys.JWT_SECRET_KEY);
-    console.log(decoded);
+    let decoded = jsonwebtoken.verify(token, keys.JWT_SECRET_KEY);
 
     if (decoded)
       return decoded;
@@ -51,8 +54,9 @@ export class AuthService {
       throw new HttpErrors[401]("Token invalido");
   }
 
-  async IdentifyToken(username: string, password: string): Promise<Credenciales | false> {
-    let user = await this.userService.ExistUser(username);
+  async IdentifyToken(identificador: string, password: string): Promise<Credenciales | false> {
+    let user = await this.credencialesRepository.findOne({where: {correo: identificador} || {username: identificador}});
+
     if (user) {
       let cryptPass = this.encriptDecryptService.Encrypt(password);
       if (user.passwordHash == cryptPass) {
@@ -63,7 +67,7 @@ export class AuthService {
   }
 
   async ResetPassword(identificador: string, newpassword: string): Promise<string | false> {
-    let user = await this.userService.ExistUser(identificador);
+    let user = await this.credencialesRepository.findOne({where: {correo: identificador} || {username: identificador}});
     if (user) {
       newpassword = this.encriptDecryptService.Encrypt(newpassword);
       user.passwordHash = newpassword;
@@ -71,6 +75,27 @@ export class AuthService {
       return newpassword;
     }
     return false;
+  }
+
+  async generateCode(request: gCodeInterface) {
+    const newCode = new CodigoVerificacion;
+    console.log(request.identificator);
+
+    let credentialsExist = await this.credencialesRepository.findOne({where: {correo: request.identificator}});
+
+    if (!credentialsExist)
+      throw new HttpErrors[402]("Usuario no valido")
+
+    newCode.exp = Date.now() + keys.ONE_MINUTE_MILLISECONDS + '';
+    newCode.codigo = keys.GENERATE_NEW_VERIFY_CODE;
+    let user = await this.usuarioRepository.findOne({where: {correo: request.identificator}});
+    if (!user?.estado)
+      throw new HttpErrors[402]("Este usuario esta desactivado");
+
+    newCode.userId = user.id;
+
+    return this.codigoVerificacionRepository.create(newCode);
+
   }
 
 }

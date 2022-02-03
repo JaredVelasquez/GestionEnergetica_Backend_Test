@@ -5,3 +5,4 @@ export * from './register.service';
 
 export * from './user.service';
 export * from './estrategy.service';
+export * from './notify.service';

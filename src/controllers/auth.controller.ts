@@ -12,9 +12,11 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
 import {UsuarioRepository} from '../repositories';
+import {AuthService} from '../services';
 import {LoginService} from '../services/login.service';
 import {Usuario} from './../models/usuario.model';
 import {ActoresRepository} from './../repositories/actores.repository';
@@ -30,7 +32,9 @@ export class AuthController {
     @service(RegisterService)
     private registerService: RegisterService,
     @service(LoginService)
-    private loginService: LoginService
+    private loginService: LoginService,
+    @service(AuthService)
+    private authService: AuthService
 
   ) { }
 
@@ -52,6 +56,16 @@ export class AuthController {
     @requestBody() loginInterface: LoginInterface
   ): Promise<any> {
     return this.loginService.Login(loginInterface);
+  }
+
+  @post('/generate-verify-code')
+  @response(200, {
+    description: 'Usuario model instance',
+  })
+  async GenerateVerifyCode(
+    @requestBody() gCode: gCodeInterface
+  ): Promise<any> {
+    return await this.authService.generateCode(gCode);
   }
 
   @get('/usuarios/count')

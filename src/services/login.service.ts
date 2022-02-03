@@ -4,26 +4,32 @@ import {HttpErrors} from '@loopback/rest';
 import {CredencialesRepository, UsuarioRepository} from '../repositories';
 import {LoginInterface} from './../core/interfaces/models/Login.interface';
 import {AuthService} from './auth.service';
+import {LocalStorage} from './local-storage.service';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class LoginService {
-
   constructor(
     @repository(CredencialesRepository)
     private credencialesRepository: CredencialesRepository,
     @repository(UsuarioRepository)
     private usuarioRepository: UsuarioRepository,
     @service(AuthService)
-    private authService: AuthService
+    private authService: AuthService,
+    @service(LocalStorage)
+    private localStorage: LocalStorage
   ) {
   }
 
   async Login(loginInterface: LoginInterface) {
+
     if (!loginInterface)
       throw new HttpErrors[401]("No puede mandar los campos del Login vacios.");
+
     let credentialExist = await this.credencialesRepository.findOne({where: {username: loginInterface.identificator} || {email: loginInterface.identificator}});
+
     if (!credentialExist)
       throw new HttpErrors[401]("Este usuario no esta registrado.");
+
     let user = await this.usuarioRepository.findOne({where: {correo: credentialExist.correo}})
 
     if (!user)
