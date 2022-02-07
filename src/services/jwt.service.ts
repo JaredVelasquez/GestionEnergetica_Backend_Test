@@ -27,10 +27,6 @@ export class JWTService {
 
 
   createToken(credentials: any, user: any) {
-    if (!credentials)
-      throw new HttpErrors[404]("Token: Credenciales vacias");
-    if (!user)
-      throw new HttpErrors[404]("Token: Usuario asociado vacio");
     try {
       let token = jsonwebtoken.sign({
         exp: keys.TOKEN_EXPIRATION_TIME,

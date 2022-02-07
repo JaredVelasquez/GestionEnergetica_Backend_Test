@@ -3,6 +3,7 @@ import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
+import {error} from '../core/library/errors.library';
 import {Actores, Credenciales, Usuario} from '../models';
 import {ActoresRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
 import {EncriptDecryptService} from './encript-decrypt.service';
@@ -28,23 +29,25 @@ export class AuthService {
   async Login(loginInterface: LoginInterface) {
 
     if (!loginInterface)
-      throw new HttpErrors[401]("No puede mandar los campos del Login vacios.");
-    console.log(loginInterface);
-
-    let matchCredencials = await this.jwtService.IdentifyToken(loginInterface)
-    console.log(matchCredencials);
-
-    if (!matchCredencials)
-      throw new HttpErrors[401]("Correo o contrasena invalidos");
+      return error.EMTY_CREDENTIALS;
 
     let user = await this.usuarioRepository.findOne({where: {correo: loginInterface.identificator}});
+    if (!user)
+      user = await this.usuarioRepository.findOne({where: {username: loginInterface.identificator}});
 
-    let token = await this.jwtService.createToken(matchCredencials, user);
+    if (!user)
+      return error.CREDENTIALS_NOT_REGISTER;
 
-    if (!token)
-      throw new HttpErrors[401]("El token no pudo ser creado");
+    let matchCredencials = await this.jwtService.IdentifyToken(loginInterface)
 
-    return token;
+    if (!matchCredencials)
+      return error.INVALID_PASSWORD;
+
+    const auth = {
+      token: await this.jwtService.createToken(matchCredencials, user),
+    }
+
+    return auth;
 
 
   }
