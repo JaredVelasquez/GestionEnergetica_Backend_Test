@@ -4,28 +4,29 @@ import {Entity, model, property} from '@loopback/repository';
 export class Actores extends Entity {
   @property({
     type: 'number',
-    required: false,
+    required: true,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
   })
-  id?: number;
+  id: number;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'UsuarioId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  usuarioId?: number;
 
   @property({
     type: 'string',
     required: true,
     length: 50,
-    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'Nombre', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
-  codigo: string;
-
-  @property({
-    type: 'string',
-    required: true,
-    mssql: {columnName: 'TipoActor', dataType: 'varchar', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
-  })
-  tipoActor: string;
+  nombre: string;
 
   @property({
     type: 'string',
@@ -36,10 +37,23 @@ export class Actores extends Entity {
 
   @property({
     type: 'string',
+    length: 250,
+    mssql: {columnName: 'ImagenId', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  imagenId?: string;
+
+  @property({
+    type: 'string',
     length: -1,
     mssql: {columnName: 'Observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   observacion?: string;
+
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'Estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  estado?: boolean;
 
   // Define well-known properties here
 

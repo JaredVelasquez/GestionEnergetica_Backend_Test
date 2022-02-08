@@ -19,8 +19,6 @@ import {UsuarioRepository} from '../repositories';
 import {AuthService, JWTService} from '../services';
 import {Usuario} from './../models/usuario.model';
 import {ActoresRepository} from './../repositories/actores.repository';
-//import {LoginService} from './../services/login.service';
-import {RegisterService} from './../services/register.service';
 
 export class AuthController {
   constructor(
@@ -28,8 +26,6 @@ export class AuthController {
     private usuarioRepository: UsuarioRepository,
     @repository(ActoresRepository)
     private actoresRepository: ActoresRepository,
-    @service(RegisterService)
-    private registerService: RegisterService,
     @service(JWTService)
     private jwtService: JWTService,
     @service(AuthService)

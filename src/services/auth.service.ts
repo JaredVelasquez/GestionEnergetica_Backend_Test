@@ -1,10 +1,9 @@
 import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {HttpErrors} from '@loopback/rest';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
 import {error} from '../core/library/errors.library';
-import {Actores, Credenciales, Usuario} from '../models';
+import {Credenciales, Usuario} from '../models';
 import {ActoresRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
 import {EncriptDecryptService} from './encript-decrypt.service';
 import {JWTService} from './jwt.service';
@@ -53,50 +52,36 @@ export class AuthService {
   }
 
   async RegisterUser(registerUser: RegisterUserInterface): Promise<boolean | any> {
-    let modelActor: Actores = new Actores;
     let modelUser: Usuario = new Usuario;
     let modelCredentials: Credenciales = new Credenciales;
 
     let userExist = await this.credencialesRepository.findOne({where: {correo: registerUser.email}});
 
+    if (userExist)
+      return error.INVALID_EMAIL;
+
     if (!userExist)
       userExist = await this.credencialesRepository.findOne({where: {username: registerUser.username}});
 
-    console.log(userExist);
-
     if (userExist)
-      throw new HttpErrors[401]("Estas correo o nombre de usuario ya esta registrado.");
+      return error.INVALID_USERNAME;
 
-    let estado = true;
-    modelActor.codigo = registerUser.code;
-    modelActor.tipoActor = registerUser.userType;
-
-    let newActor = await this.actoresRepository.create(modelActor);
-    if (!newActor)
-      throw new HttpErrors[401]("No se pudo crear el actor");
-
-    modelUser.actorId = newActor.id;
-    modelUser.rolid = registerUser.roleId;
+    modelUser.rolid = registerUser.rolId;
     modelUser.nombre = registerUser.firstName;
     modelUser.apellido = registerUser.lastName;
     modelUser.correo = registerUser.email;
-    modelUser.estado = estado;
+    modelUser.estado = true;
+    modelUser.telefono = registerUser.phoneNumber;
 
-    let newUser = await this.usuarioRepository.create(modelUser);
-    console.log(newUser);
-    if (!newUser)
-      throw new HttpErrors[401]("No se pudo crear el Usuario");
+    await this.usuarioRepository.create(modelUser);
 
     let newHash = this.encriptDecryptService.Encrypt(registerUser.password);
-
-    if (!newHash)
-      throw new HttpErrors[401]("No se pudo crear el Hash");
 
     modelCredentials.correo = registerUser.email;
     modelCredentials.username = registerUser.username;
     modelCredentials.hash = newHash;
 
-    let newCredentials = await this.credencialesRepository.create(modelCredentials);
+    await this.credencialesRepository.create(modelCredentials);
 
     return true;
   }

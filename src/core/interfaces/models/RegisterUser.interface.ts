@@ -1,11 +1,10 @@
 
 export interface RegisterUserInterface {
-  code: string;
-  userType: string;
+  rolId: number;
   firstName: string;
   lastName: string;
   username: string;
   email: string;
-  roleId: number;
   password: string;
+  phoneNumber: string;
 }

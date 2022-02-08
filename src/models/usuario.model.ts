@@ -16,14 +16,6 @@ export class Usuario extends Entity {
     type: 'number',
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'ActorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
-  })
-  actorId?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
     mssql: {columnName: 'Rolid', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
   rolid?: number;

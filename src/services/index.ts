@@ -3,7 +3,6 @@ export * from './encript-decrypt.service';
 export * from './estrategy.service';
 export * from './jwt.service';
 export * from './notify.service';
-export * from './register.service';
 export * from './user.service';
 
 
