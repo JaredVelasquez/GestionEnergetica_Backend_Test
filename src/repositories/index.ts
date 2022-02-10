@@ -4,3 +4,5 @@ export * from './roles.repository';
 export * from './usuario.repository';
 
 export * from './codigo-verificacion.repository';
+export * from './medidor.repository';
+export * from './zona.repository';
