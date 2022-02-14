@@ -4,27 +4,22 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
+import {viewOf} from '../core/library/views.library';
 import {Medidor} from '../models';
 import {MedidorRepository} from '../repositories';
 
 export class MedidorController {
   constructor(
     @repository(MedidorRepository)
-    public medidorRepository : MedidorRepository,
-  ) {}
+    public medidorRepository: MedidorRepository,
+  ) { }
 
   @post('/medidors')
   @response(200, {
@@ -146,5 +141,18 @@ export class MedidorController {
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.medidorRepository.deleteById(id);
+  }
+
+
+  @get('/get-meters')
+  async GetContacts(): Promise<any> {
+    let datos: any[] = await this.getView();
+    return datos;
+  }
+
+  async getView() {
+    return await this.medidorRepository.dataSource.execute(
+      viewOf.GET_METERS,
+    );
   }
 }
