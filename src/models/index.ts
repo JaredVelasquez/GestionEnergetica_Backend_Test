@@ -7,3 +7,4 @@ export * from './usuario.model';
 export * from './zona.model';
 
 
+export * from './punto-medicion.model';

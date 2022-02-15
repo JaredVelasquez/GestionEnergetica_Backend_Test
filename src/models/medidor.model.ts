@@ -4,13 +4,13 @@ import {Entity, model, property} from '@loopback/repository';
 export class Medidor extends Entity {
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  id: number;
+  id?: number;
 
   @property({
     type: 'string',

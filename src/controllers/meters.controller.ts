@@ -15,7 +15,7 @@ import {viewOf} from '../core/library/views.library';
 import {Medidor} from '../models';
 import {MedidorRepository} from '../repositories';
 
-export class MedidorController {
+export class MetersController {
   constructor(
     @repository(MedidorRepository)
     public medidorRepository: MedidorRepository,
@@ -145,7 +145,7 @@ export class MedidorController {
 
 
   @get('/get-meters')
-  async GetContacts(): Promise<any> {
+  async CommunityPost(): Promise<any> {
     let datos: any[] = await this.getView();
     return datos;
   }
