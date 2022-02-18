@@ -4,27 +4,22 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
+import {viewOf} from '../core/library/views.library';
 import {Zona} from '../models';
 import {ZonaRepository} from '../repositories';
 
 export class ZonaController {
   constructor(
     @repository(ZonaRepository)
-    public zonaRepository : ZonaRepository,
-  ) {}
+    public zonaRepository: ZonaRepository,
+  ) { }
 
   @post('/zonas')
   @response(200, {
@@ -146,5 +141,17 @@ export class ZonaController {
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.zonaRepository.deleteById(id);
+  }
+
+
+  @get('/get-zones')
+  async zonesGetZones(): Promise<any> {
+    let datos: any[] = await this.getZones();
+    return datos;
+  }
+  async getZones() {
+    return await this.zonaRepository.dataSource.execute(
+      viewOf.GET_Zones,
+    );
   }
 }

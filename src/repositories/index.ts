@@ -8,3 +8,4 @@ export * from './zona.repository';
 
 export * from './medidor.repository';
 export * from './punto-medicion.repository';
+export * from './medidor-virtual.repository';
