@@ -6,3 +6,5 @@ export * from './notify.service';
 export * from './user.service';
 
 
+export * from './image.service';
+export * from './actor.service';

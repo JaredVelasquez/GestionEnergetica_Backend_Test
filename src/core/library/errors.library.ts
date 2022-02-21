@@ -7,4 +7,5 @@ export namespace error {
   export const CREDENTIALS_NOT_REGISTER: errorIn = {id: -5, content: 'Correo o contraseña invalidos. ', solution: 'Pruebe otras credenciales o cree una cuenta'};
   export const CREDENTIALS_ALREDY_EXIST: errorIn = {id: -6, content: 'Este correo o nombre de usuario no esta registrado.', solution: 'Utilice otras credenciales'};
   export const EMTY_CREDENTIALS: errorIn = {id: -7, content: 'Credenciales vacias.', solution: 'Rellene los campos necesarios'};
+  export const INVALID_IMAGE_FORMAT: errorIn = {id: -8, content: 'Formato de imagen no permitido.', solution: 'Seleccione una imagen formato .PNG, .JPG, .JPEG, .SVG'};
 }
