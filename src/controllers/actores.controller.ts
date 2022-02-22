@@ -9,10 +9,7 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param, patch, post, put, Request, requestBody,
-  Response,
-  response,
-  RestBindings
+  getModelSchemaRef, param, patch, post, put, Request, requestBody, Response, response, RestBindings
 } from '@loopback/rest';
 import {viewOf} from '../core/library/views.library';
 import {Actores} from '../models';
@@ -192,6 +189,9 @@ export class ActoresController {
     @inject(RestBindings.Http.RESPONSE) response: Response,
     @requestBody.file() request: Request,
   ): Promise<any> {
+    console.log(response.req?.file?.size);
+    console.log(response.req?.file?.path);
+
     return true;
   }
 }
