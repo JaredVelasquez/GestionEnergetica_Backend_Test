@@ -1,4 +1,4 @@
-import {inject, service} from '@loopback/core';
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -9,7 +9,7 @@ import {
 } from '@loopback/repository';
 import {
   del, get,
-  getModelSchemaRef, param, patch, post, put, Request, requestBody, Response, response, RestBindings
+  getModelSchemaRef, param, patch, post, put, requestBody, response
 } from '@loopback/rest';
 import {viewOf} from '../core/library/views.library';
 import {Actores} from '../models';
@@ -168,30 +168,5 @@ export class ActoresController {
     return await this.actoresRepository.dataSource.execute(
       viewOf.GET_Providers,
     );
-  }
-
-
-  @post('/upload-image', {
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-            },
-          },
-        },
-        description: 'Subir imagen',
-      },
-    },
-  })
-  async personImage(
-    @inject(RestBindings.Http.RESPONSE) response: Response,
-    @requestBody.file() request: Request,
-  ): Promise<any> {
-    console.log(response.req?.file?.size);
-    console.log(response.req?.file?.path);
-
-    return true;
   }
 }

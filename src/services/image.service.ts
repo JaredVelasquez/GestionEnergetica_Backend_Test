@@ -38,8 +38,6 @@ export class ImageService {
   /**
    *
    * @param storePath
-   * @param request
-   * @param response
    */
   StoreFileToPath(storePath: string, fieldname: string, request: Request, response: Response, acceptedExt: string[]): Promise<object> {
 
