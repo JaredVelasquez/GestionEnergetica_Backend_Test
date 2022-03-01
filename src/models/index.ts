@@ -10,3 +10,9 @@ export * from './zona.model';
 
 
 
+export * from './parametro-tarifa.model';
+export * from './tarifa.model';
+export * from './tipo-cargo.model';
+export * from './contrato.model';
+export * from './factura.model';
+export * from './cargos-factura.model';
