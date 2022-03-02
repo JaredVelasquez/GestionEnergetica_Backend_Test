@@ -4,21 +4,21 @@ import {Entity, model, property} from '@loopback/repository';
 export class Tarifa extends Entity {
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  id: number;
+  id?: number;
 
   @property({
     type: 'string',
-    required: true,
+    required: false,
     length: 50,
-    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  codigo: string;
+  codigo?: string;
 
   @property({
     type: 'string',
@@ -29,27 +29,18 @@ export class Tarifa extends Entity {
 
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'PuntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'PuntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  puntoMedicionId: number;
+  puntoMedicionId?: number;
 
   @property({
     type: 'boolean',
     mssql: {columnName: 'Tipo', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   tipo?: boolean;
-
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'MatrizHorariaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
-  })
-  matrizHorariaId: number;
 
   @property({
     type: 'boolean',

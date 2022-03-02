@@ -6,52 +6,52 @@ import {Entity, model, property} from '@loopback/repository';
 export class ParametroTarifa extends Entity {
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  id: number;
+  id?: number;
 
   @property({
     type: 'number',
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'TarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'TarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
   })
-  tarifaId?: number;
+  tarifaId: number;
 
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'TipoCargoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'TipoCargoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  tipoCargoId: number;
+  tipoCargoId?: number;
 
   @property({
     type: 'date',
-    required: true,
-    mssql: {columnName: 'FechaInicio', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    required: false,
+    mssql: {columnName: 'FechaInicio', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  fechaInicio: string;
+  fechaInicio?: string;
 
   @property({
     type: 'date',
-    required: true,
-    mssql: {columnName: 'FechaFinal', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    required: false,
+    mssql: {columnName: 'FechaFinal', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  fechaFinal: string;
+  fechaFinal?: string;
 
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 53,
-    mssql: {columnName: 'Valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'Valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
-  valor: number;
+  valor?: number;
 
   @property({
     type: 'string',
