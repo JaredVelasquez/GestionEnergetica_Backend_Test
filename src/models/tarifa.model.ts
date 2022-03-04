@@ -26,6 +26,12 @@ export class Tarifa extends Entity {
     mssql: {columnName: 'Descripcion', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   descripcion?: string;
+  @property({
+    type: 'string',
+    length: 250,
+    mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  observacion?: string;
 
   @property({
     type: 'number',
