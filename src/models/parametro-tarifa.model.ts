@@ -16,11 +16,12 @@ export class ParametroTarifa extends Entity {
 
   @property({
     type: 'number',
+    required: false,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'TarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'TarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  tarifaId: number;
+  tarifaId?: number;
 
   @property({
     type: 'number',
