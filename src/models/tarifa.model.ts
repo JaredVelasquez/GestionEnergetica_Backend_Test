@@ -8,49 +8,49 @@ export class Tarifa extends Entity {
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
   id?: number;
 
   @property({
     type: 'string',
-    required: false,
+    required: true,
     length: 50,
-    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
-  codigo?: string;
+  codigo: string;
 
   @property({
     type: 'string',
     length: 250,
-    mssql: {columnName: 'Descripcion', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'descripcion', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   descripcion?: string;
-  @property({
-    type: 'string',
-    length: 250,
-    mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  observacion?: string;
 
   @property({
     type: 'number',
-    required: false,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'PuntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'puntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
   puntoMedicionId?: number;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'Tipo', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'tipo', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   tipo?: boolean;
 
   @property({
+    type: 'string',
+    length: -1,
+    mssql: {columnName: 'observacion', dataType: 'nvarchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  observacion?: string;
+
+  @property({
     type: 'boolean',
-    mssql: {columnName: 'Estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   estado?: boolean;
 

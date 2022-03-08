@@ -15,3 +15,4 @@ export * from './tipo-cargo.repository';
 export * from './contrato.repository';
 export * from './factura.repository';
 export * from './cargos-factura.repository';
+export * from './tarifa-parametro-detalle.repository';

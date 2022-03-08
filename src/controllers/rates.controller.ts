@@ -13,12 +13,14 @@ import {
 } from '@loopback/rest';
 import {viewOf} from '../core/library/views.library';
 import {Tarifa} from '../models';
-import {TarifaRepository} from '../repositories';
+import {TarifaParametroDetalleRepository, TarifaRepository} from '../repositories';
 
 export class RatesController {
   constructor(
     @repository(TarifaRepository)
     public tarifaRepository: TarifaRepository,
+    @repository(TarifaParametroDetalleRepository)
+    public tarifaParametroDetalleRepository: TarifaParametroDetalleRepository,
   ) { }
 
   @post('/tarifas')
@@ -140,6 +142,13 @@ export class RatesController {
     description: 'Tarifa DELETE success',
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
+    let existRelation = await this.tarifaParametroDetalleRepository.find({where: {tarifaId: id}});
+    if (existRelation) {
+      for (let i = 0; i < existRelation.length; i++) {
+        await this.tarifaParametroDetalleRepository.deleteById(existRelation[i].id);
+      }
+    }
+
     await this.tarifaRepository.deleteById(id);
   }
 
