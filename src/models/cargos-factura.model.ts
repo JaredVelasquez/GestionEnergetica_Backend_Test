@@ -4,13 +4,13 @@ import {Entity, model, property} from '@loopback/repository';
 export class CargosFactura extends Entity {
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  id: number;
+  id?: number;
 
   @property({
     type: 'date',
@@ -34,9 +34,51 @@ export class CargosFactura extends Entity {
   @property({
     type: 'number',
     precision: 53,
+    mssql: {columnName: 'cargoFinanciamiento', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  cargoFinanciamiento?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
+    mssql: {columnName: 'ajuste', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  ajuste?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
+    mssql: {columnName: 'cargoCorte', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  cargoCorte?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
+    mssql: {columnName: 'cargoMora', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  cargoMora?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
+    mssql: {columnName: 'otrosCargos', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  otrosCargos?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
     mssql: {columnName: 'totalCargos', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   totalCargos?: number;
+
+  @property({
+    type: 'string',
+    length: -1,
+    mssql: {columnName: 'observacion', dataType: 'nvarchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  observacion?: string;
 
   @property({
     type: 'number',

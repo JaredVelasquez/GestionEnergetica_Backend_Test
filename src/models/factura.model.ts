@@ -4,13 +4,52 @@ import {Entity, model, property} from '@loopback/repository';
 export class Factura extends Entity {
   @property({
     type: 'number',
-    required: true,
+    required: false,
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  id: number;
+  id?: number;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'medidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  medidorId?: number;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'tarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  tarifaId?: number;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'actorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  actorId?: number;
+
+  @property({
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'contratoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  contratoId?: number;
+
+  @property({
+    type: 'string',
+    length: 150,
+    mssql: {columnName: 'descripcion', dataType: 'nvarchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  descripcion?: string;
 
   @property({
     type: 'string',
@@ -52,76 +91,24 @@ export class Factura extends Entity {
   @property({
     type: 'string',
     length: 150,
-    mssql: {columnName: 'titular', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  titular?: string;
-
-  @property({
-    type: 'string',
-    length: 150,
     mssql: {columnName: 'direccion', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   direccion?: string;
 
   @property({
-    type: 'string',
-    length: 150,
-    mssql: {columnName: 'codigoCliente', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  codigoCliente?: string;
-
-  @property({
-    type: 'string',
-    length: 150,
-    mssql: {columnName: 'medidor', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  medidor?: string;
-
-  @property({
-    type: 'number',
-    required: true,
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'medidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
-  })
-  medidorId: number;
-
-  @property({
-    type: 'number',
-    precision: 53,
-    mssql: {columnName: 'energiaConsumida', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  energiaConsumida?: number;
-
-  @property({
-    type: 'string',
-    length: 150,
-    mssql: {columnName: 'tipoConsumo', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  tipoConsumo?: string;
-
-  @property({
-    type: 'string',
-    length: 150,
-    mssql: {columnName: 'tarifa', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  tarifa?: string;
-
-  @property({
     type: 'number',
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'tarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'tipoConsumo', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  tarifaId?: number;
+  tipoConsumo?: number;
 
   @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'contratoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    type: 'string',
+    length: -1,
+    mssql: {columnName: 'observacion', dataType: 'nvarchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  contratoId?: number;
+  observacion?: string;
 
   @property({
     type: 'number',
