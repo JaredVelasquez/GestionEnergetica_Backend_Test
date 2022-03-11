@@ -16,33 +16,9 @@ export class Factura extends Entity {
     type: 'number',
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'medidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'contratoMedidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  medidorId?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'tarifaId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
-  })
-  tarifaId?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'actorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
-  })
-  actorId?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'contratoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
-  })
-  contratoId?: number;
+  contratoMedidorId?: number;
 
   @property({
     type: 'string',
@@ -87,13 +63,6 @@ export class Factura extends Entity {
     mssql: {columnName: 'fechaFin', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   fechaFin?: string;
-
-  @property({
-    type: 'string',
-    length: 150,
-    mssql: {columnName: 'direccion', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  direccion?: string;
 
   @property({
     type: 'number',

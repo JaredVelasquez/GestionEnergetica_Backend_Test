@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -11,35 +12,29 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import {InvoicesInterface} from '../core/interfaces/models/invoices.interface';
 import {viewOf} from '../core/library/views.library';
 import {Factura} from '../models';
 import {FacturaRepository} from '../repositories';
+import {InvoicesService} from '../services';
 
 export class InvoicesController {
   constructor(
     @repository(FacturaRepository)
     public facturaRepository: FacturaRepository,
+    @service(InvoicesService)
+    private invoicesService: InvoicesService
   ) { }
+
 
   @post('/facturas')
   @response(200, {
-    description: 'Factura model instance',
-    content: {'application/json': {schema: getModelSchemaRef(Factura)}},
+    description: 'Crear factura y factura detalle',
   })
-  async create(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Factura, {
-            title: 'NewFactura',
-            exclude: ['id'],
-          }),
-        },
-      },
-    })
-    factura: Omit<Factura, 'id'>,
-  ): Promise<Factura> {
-    return this.facturaRepository.create(factura);
+  async RegisterUser(
+    @requestBody() Invoices: InvoicesInterface
+  ): Promise<any> {
+    return this.invoicesService.CreateInvoice(Invoices);
   }
 
   @get('/facturas/count')

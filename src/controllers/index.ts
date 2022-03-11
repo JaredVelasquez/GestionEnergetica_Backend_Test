@@ -11,3 +11,4 @@ export * from './type-charge.controller';
 export * from './contracts.controller';
 export * from './invoices.controller';
 export * from './especial-charges.controller';
+export * from './invoice-datail.controller';

@@ -17,3 +17,5 @@ export * from './contrato.model';
 export * from './factura.model';
 export * from './cargos-factura.model';
 export * from './tarifa-parametro-detalle.model';
+export * from './contratos-medidores.model';
+export * from './detalle-factura.model';
