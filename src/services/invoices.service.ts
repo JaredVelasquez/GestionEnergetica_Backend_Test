@@ -17,6 +17,7 @@ export class InvoicesService {
   ) { }
 
   async CreateInvoice(invoice: InvoicesInterface) {
+    let cargoAsigned;
     let newInvoice = {
       contratoMedidorId: invoice.contratoMedidorId,
       codigo: invoice.codigo,
@@ -29,26 +30,36 @@ export class InvoicesService {
       estado: invoice.estado,
 
     }
+    console.log(invoice);
+
     let InvoiceCreated = await this.facturaRepository.create(newInvoice);
 
     if (!InvoiceCreated)
       return "Error: No fue posible crear la factura";
 
-    let cargoAsigned = await this.cargosFacturaRepository.findById(invoice.cargoId);
 
-    if (!cargoAsigned)
-      return "Error: No fue posible encontrar el cargo asignado.";
+    if (invoice.cargoId)
+      cargoAsigned = await this.cargosFacturaRepository.findById(invoice.cargoId);
+
+    if (!cargoAsigned) {
+      cargoAsigned = {
+        totalCargos: 0,
+      }
+    }
 
     let paramTarifa = await this.parametroTarifaRepository.findById(invoice.parametroTarifaId);
 
     if (!paramTarifa)
       return "Error: tarifa no existe.";
 
+    if (!cargoAsigned.totalCargos)
+      return "No existen cargos para asignar"
+
     let newDetailInoice = {
       facturaId: InvoiceCreated.id,
       cargoFacturaId: cargoAsigned.id,
       energiaConsumida: invoice.energiaConsumida,
-      total: invoice.energiaConsumida * paramTarifa.valor,
+      total: invoice.energiaConsumida * paramTarifa.valor + cargoAsigned.totalCargos
     }
 
     let invoiceDatailCreated = await this.detalleFacturaRepository.create(newDetailInoice);
