@@ -10,4 +10,6 @@ export namespace viewOf {
   export const GET_CONTRACTS = `SELECT * FROM dbo.GetContratos`;
   export const GET_INVOICES = `SELECT * FROM dbo.GetFacturas`;
   export const GET_ESPECIAL_CHARGES = `SELECT * FROM dbo.GetCEspeciales`;
+  export const GET_PT_DETAIL = `SELECT * FROM dbo.GetTPdetalle`;
+  export const GET_CMETERS = `SELECT * FROM dbo.GetCMedidores`;
 }

@@ -1,7 +1,7 @@
 import { /* inject, */ BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {InvoicesInterface} from '../core/interfaces/models/invoices.interface';
-import {CargosFacturaRepository, DetalleFacturaRepository, FacturaRepository, ParametroTarifaRepository} from '../repositories';
+import {CargosFacturaRepository, ContratosMedidoresRepository, DetalleFacturaRepository, FacturaRepository, ParametroTarifaRepository, TarifaParametroDetalleRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class InvoicesService {
@@ -10,10 +10,14 @@ export class InvoicesService {
     private facturaRepository: FacturaRepository,
     @repository(DetalleFacturaRepository)
     private detalleFacturaRepository: DetalleFacturaRepository,
-    @repository(CargosFacturaRepository)
-    private cargosFacturaRepository: CargosFacturaRepository,
+    @repository(ContratosMedidoresRepository)
+    private contratosMedidoresRepository: ContratosMedidoresRepository,
+    @repository(TarifaParametroDetalleRepository)
+    private tarifaParametroDetalleRepository: TarifaParametroDetalleRepository,
     @repository(ParametroTarifaRepository)
-    private parametroTarifaRepository: ParametroTarifaRepository
+    private parametroTarifaRepository: ParametroTarifaRepository,
+    @repository(CargosFacturaRepository)
+    private cargosFacturaRepository: CargosFacturaRepository
   ) { }
 
   async CreateInvoice(invoice: InvoicesInterface) {
@@ -32,34 +36,39 @@ export class InvoicesService {
     }
     console.log(invoice);
 
-    let InvoiceCreated = await this.facturaRepository.create(newInvoice);
-
-    if (!InvoiceCreated)
-      return "Error: No fue posible crear la factura";
-
-
-    if (invoice.cargoId)
-      cargoAsigned = await this.cargosFacturaRepository.findById(invoice.cargoId);
+    cargoAsigned = await this.cargosFacturaRepository.findById(invoice.cargoId);
 
     if (!cargoAsigned) {
       cargoAsigned = {
         totalCargos: 0,
       }
+
     }
 
-    let paramTarifa = await this.parametroTarifaRepository.findById(invoice.parametroTarifaId);
-
-    if (!paramTarifa)
-      return "Error: tarifa no existe.";
-
     if (!cargoAsigned.totalCargos)
-      return "No existen cargos para asignar"
+      return 'no hay cargos asignables';
+
+    let InvoiceCreated = await this.facturaRepository.create(newInvoice);
+
+    if (!InvoiceCreated)
+      return "Error: No fue posible crear la factura";
+
+    let ContratoMedidor = await this.contratosMedidoresRepository.findById(invoice.contratoMedidorId);
+
+    let tarifaRelation = await this.tarifaParametroDetalleRepository.findById(ContratoMedidor.tarifaId);
+
+    let tarifa = await this.parametroTarifaRepository.findOne({where: {Id: tarifaRelation.parametroId}});
+
+    if (!tarifa)
+      return 'error';
+
+
 
     let newDetailInoice = {
       facturaId: InvoiceCreated.id,
-      cargoFacturaId: cargoAsigned.id,
+      cargoFacturaId: invoice.cargoId,
       energiaConsumida: invoice.energiaConsumida,
-      total: invoice.energiaConsumida * paramTarifa.valor + cargoAsigned.totalCargos
+      total: invoice.energiaConsumida * tarifa?.valor + cargoAsigned.totalCargos
     }
 
     let invoiceDatailCreated = await this.detalleFacturaRepository.create(newDetailInoice);
