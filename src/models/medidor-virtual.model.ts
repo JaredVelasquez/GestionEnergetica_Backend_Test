@@ -26,15 +26,15 @@ export class MedidorVirtual extends Entity {
   @property({
     type: 'number',
     precision: 53,
-    mssql: {columnName: 'porcentaje', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'porcentaje', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
   })
-  porcentaje?: number;
+  porcentaje: number;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'operacion', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'operacion', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
-  operacion?: boolean;
+  operacion: boolean;
 
   @property({
     type: 'string',

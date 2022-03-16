@@ -69,9 +69,9 @@ export class CargosFactura extends Entity {
   @property({
     type: 'number',
     precision: 53,
-    mssql: {columnName: 'totalCargos', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'totalCargos', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
   })
-  totalCargos?: number;
+  totalCargos: number;
 
   @property({
     type: 'string',
