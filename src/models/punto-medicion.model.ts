@@ -8,7 +8,7 @@ export class PuntoMedicion extends Entity {
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
   id?: number;
 
@@ -16,20 +16,20 @@ export class PuntoMedicion extends Entity {
     type: 'string',
     required: true,
     length: 50,
-    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'codigo', dataType: 'varchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
   codigo: string;
 
   @property({
     type: 'string',
     length: -1,
-    mssql: {columnName: 'Descripcion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'descripcion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   descripcion?: string;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'Estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   estado?: boolean;
 

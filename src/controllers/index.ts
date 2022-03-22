@@ -14,3 +14,5 @@ export * from './especial-charges.controller';
 export * from './invoice-datail.controller';
 export * from './rate-param-detail.controller';
 export * from './contract-meter.controller';
+export * from './upload-file.controller';
+export * from './measuring-point.controller';

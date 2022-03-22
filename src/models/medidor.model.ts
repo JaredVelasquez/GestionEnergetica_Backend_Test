@@ -15,6 +15,13 @@ export class Medidor extends Entity {
   @property({
     type: 'string',
     length: 100,
+    mssql: {columnName: 'sourceId', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  sourceId?: string;
+
+  @property({
+    type: 'string',
+    length: 100,
     mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   codigo?: string;
@@ -72,9 +79,9 @@ export class Medidor extends Entity {
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'Tipo', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'Tipo', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
-  tipo?: boolean;
+  tipo?: number;
 
   @property({
     type: 'boolean',

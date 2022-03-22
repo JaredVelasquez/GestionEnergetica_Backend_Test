@@ -147,26 +147,34 @@ export class ActoresController {
   }
 
 
-  @get('/get-clients')
-  async ActorsGetClients(): Promise<any> {
-    let datos: any[] = await this.getClients();
+  @get('/get-clients/{id}')
+  async GetClients(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.dataClients(id);
     return datos;
   }
-  async getClients() {
+
+  async dataClients(id: number) {
+
     return await this.actoresRepository.dataSource.execute(
-      viewOf.GET_Clients,
+      `${viewOf.GET_Clients} Where estado = ${id}`,
     );
   }
 
 
-  @get('/get-providers')
-  async ActorsGetProviders(): Promise<any> {
-    let datos: any[] = await this.getProviders();
+  @get('/get-providers/{id}')
+  async GetProviders(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.dataProviders(id);
     return datos;
   }
-  async getProviders() {
+
+  async dataProviders(id: number) {
+
     return await this.actoresRepository.dataSource.execute(
-      viewOf.GET_Providers,
+      `${viewOf.GET_Providers} Where estado = ${id}`,
     );
   }
 }

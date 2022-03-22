@@ -143,15 +143,18 @@ export class ZonaController {
     await this.zonaRepository.deleteById(id);
   }
 
-
-  @get('/get-zones')
-  async zonesGetZones(): Promise<any> {
-    let datos: any[] = await this.getZones();
+  @get('/get-zones/{id}')
+  async GetZones(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.dataZones(id);
     return datos;
   }
-  async getZones() {
+
+  async dataZones(id: number) {
+
     return await this.zonaRepository.dataSource.execute(
-      viewOf.GET_Zones,
+      `${viewOf.GET_Zones} Where estado = ${id}`,
     );
   }
 }

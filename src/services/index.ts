@@ -9,3 +9,4 @@ export * from './user.service';
 export * from './image.service';
 export * from './actor.service';
 export * from './invoices.service';
+export * from './file-upload.service';
