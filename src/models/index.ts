@@ -19,3 +19,4 @@ export * from './cargos-factura.model';
 export * from './tarifa-parametro-detalle.model';
 export * from './contratos-medidores.model';
 export * from './detalle-factura.model';
+export * from './roll-over.model';

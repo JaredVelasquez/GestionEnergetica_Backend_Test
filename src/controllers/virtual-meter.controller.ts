@@ -143,16 +143,18 @@ export class VirtualMeterController {
     await this.medidorVirtualRepository.deleteById(id);
   }
 
-
-
-  @get('/get-vmeters')
-  async GetVirtualMeters(): Promise<any> {
-    let datos: any[] = await this.getVMeters();
+  @get('/get-vmeters/{id}')
+  async dataVMeter(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getVMeters(id);
     return datos;
   }
-  async getVMeters() {
+
+  async getVMeters(id: number) {
+
     return await this.medidorVirtualRepository.dataSource.execute(
-      viewOf.GET_Virtual_METERS,
+      `${viewOf.GET_Virtual_METERS} Where estado = ${id}`,
     );
   }
 }

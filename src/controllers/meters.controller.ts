@@ -144,15 +144,18 @@ export class MetersController {
   }
 
 
-  @get('/get-meters')
-  async CommunityPost(): Promise<any> {
-    let datos: any[] = await this.getView();
+  @get('/get-meters/{id}')
+  async dataMeter(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getMeters(id);
     return datos;
   }
 
-  async getView() {
+  async getMeters(id: number) {
+
     return await this.medidorRepository.dataSource.execute(
-      viewOf.GET_METERS,
+      `${viewOf.GET_METERS} Where estado = ${id}`,
     );
   }
 }

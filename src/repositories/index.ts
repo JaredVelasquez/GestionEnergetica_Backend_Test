@@ -18,3 +18,4 @@ export * from './cargos-factura.repository';
 export * from './tarifa-parametro-detalle.repository';
 export * from './contratos-medidores.repository';
 export * from './detalle-factura.repository';
+export * from './roll-over.repository';

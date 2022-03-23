@@ -8,7 +8,7 @@ export class Medidor extends Entity {
     precision: 10,
     scale: 0,
     id: 1,
-    mssql: {columnName: 'Id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'id', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
   id?: number;
 
@@ -22,42 +22,42 @@ export class Medidor extends Entity {
   @property({
     type: 'string',
     length: 100,
-    mssql: {columnName: 'Codigo', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'codigo', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   codigo?: string;
 
   @property({
     type: 'string',
     length: 100,
-    mssql: {columnName: 'Descripcion', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'descripcion', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   descripcion?: string;
 
   @property({
     type: 'string',
     length: 100,
-    mssql: {columnName: 'Modelo', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'modelo', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   modelo?: string;
 
   @property({
     type: 'string',
     length: 100,
-    mssql: {columnName: 'Serie', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'serie', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   serie?: string;
 
   @property({
     type: 'number',
     precision: 53,
-    mssql: {columnName: 'LecturaMax', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'lecturaMax', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   lecturaMax?: number;
 
   @property({
     type: 'number',
     precision: 53,
-    mssql: {columnName: 'Multiplicador', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'multiplicador', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   multiplicador?: number;
 
@@ -66,26 +66,32 @@ export class Medidor extends Entity {
     required: true,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'PuntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'puntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
   })
   puntoMedicionId: number;
 
   @property({
     type: 'string',
     length: -1,
-    mssql: {columnName: 'Observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   observacion?: string;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'Tipo', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'puntoConexion', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  puntoConexion?: number;
+
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'tipo', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   tipo?: number;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'Estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   estado?: boolean;
 
