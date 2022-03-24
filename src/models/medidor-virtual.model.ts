@@ -26,13 +26,13 @@ export class MedidorVirtual extends Entity {
   @property({
     type: 'number',
     precision: 53,
-    mssql: {columnName: 'porcentaje', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'porcentaje', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   porcentaje: number;
 
   @property({
     type: 'boolean',
-    mssql: {columnName: 'operacion', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+    mssql: {columnName: 'operacion', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   operacion: boolean;
 
@@ -42,6 +42,12 @@ export class MedidorVirtual extends Entity {
     mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   observacion?: string;
+
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  estado?: boolean;
 
   // Define well-known properties here
 
