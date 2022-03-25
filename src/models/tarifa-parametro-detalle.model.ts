@@ -32,6 +32,11 @@ export class TarifaParametroDetalle extends Entity {
   })
   parametroId: number;
 
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  estado?: boolean;
   // Define well-known properties here
 
   // Indexer property to allow additional data

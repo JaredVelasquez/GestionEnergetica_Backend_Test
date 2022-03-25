@@ -14,7 +14,7 @@ import {
 import {ratesParametersInterface} from '../core/interfaces/models/rates-parameters.interface';
 import {viewOf} from '../core/library/views.library';
 import {ParametroTarifa} from '../models';
-import {ParametroTarifaRepository, TarifaParametroDetalleRepository, TarifaRepository} from '../repositories';
+import {ParametroTarifaRepository, TarifaParametroDetalleRepository, TarifaRepository, TipoCargoRepository} from '../repositories';
 
 export class RateParametersController {
   constructor(
@@ -24,6 +24,8 @@ export class RateParametersController {
     public tarifaRepository: TarifaRepository,
     @repository(TarifaParametroDetalleRepository)
     public tarifaParametroDetalleRepository: TarifaParametroDetalleRepository,
+    @repository(TipoCargoRepository)
+    public TipoCargoRepository: TipoCargoRepository,
 
   ) { }
 
@@ -74,11 +76,29 @@ export class RateParametersController {
     let newRelation = {
       tarifaId: tarifaExist.id,
       parametroId: parametroCreated.id,
+      estado: true,
     }
 
     let createRelation = await this.tarifaParametroDetalleRepository.create(newRelation);
 
-    return createRelation;
+    let existCargo = await this.TipoCargoRepository.findById(ratesParameters.cargoId);
+
+    let result = {
+      id: createRelation.id,
+      tipo: parametroCreated.tipo,
+      idParametro: parametroCreated.id,
+      codigo: tarifaExist.codigo,
+      cargoId: parametroCreated.tipoCargoId,
+      cargoNombre: existCargo.nombre,
+      valor: parametroCreated.valor,
+      fechaInicio: parametroCreated.fechaInicio,
+      fechaFinal: parametroCreated.fechaFinal,
+      estado: createRelation.estado,
+      observacion: parametroCreated.observacion,
+      tarifaId: tarifaExist.id,
+    }
+
+    return result;
   }
 
   @get('/parametro-tarifas/count')
@@ -188,18 +208,16 @@ export class RateParametersController {
     await this.parametroTarifaRepository.deleteById(id);
   }
 
-  @get('/get-parameter/{id}')
-  async ParamtersTable(
-    @param.path.number('id') id: number
-  ): Promise<any> {
-    let datos = await this.getParameters(id);
+  @get('/get-parameter')
+  async GetData(): Promise<any> {
+    let datos: any[] = await this.getParamRelation();
     return datos;
   }
 
-  async getParameters(id: number) {
+  async getParamRelation() {
 
-    return await this.parametroTarifaRepository.dataSource.execute(
-      `${viewOf.GET_RATE_PARAMETERS} Where id = ${id}`,
+    return await this.tarifaParametroDetalleRepository.dataSource.execute(
+      `${viewOf.GET_RATE_PARAMETERS}`,
     );
   }
 

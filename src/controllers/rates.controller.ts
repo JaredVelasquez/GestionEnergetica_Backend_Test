@@ -152,16 +152,18 @@ export class RatesController {
     await this.tarifaRepository.deleteById(id);
   }
 
-
-  @get('/get-rates')
-  async RatesTable(): Promise<any> {
-    let datos: any[] = await this.getRates();
+  @get('/get-rates/{id}')
+  async getRates(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.dataRates(id);
     return datos;
   }
 
-  async getRates() {
+  async dataRates(id: number) {
+
     return await this.tarifaRepository.dataSource.execute(
-      viewOf.GET_RATES,
+      `${viewOf.GET_RATES} Where estado = ${id}`,
     );
   }
 }

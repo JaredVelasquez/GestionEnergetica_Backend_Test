@@ -78,13 +78,13 @@ export class Medidor extends Entity {
   observacion?: string;
 
   @property({
-    type: 'boolean',
+    type: 'number',
     mssql: {columnName: 'puntoConexion', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   puntoConexion?: number;
 
   @property({
-    type: 'boolean',
+    type: 'number',
     mssql: {columnName: 'tipo', dataType: 'int', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   tipo?: number;
