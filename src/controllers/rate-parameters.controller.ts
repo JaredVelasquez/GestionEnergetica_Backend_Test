@@ -221,16 +221,19 @@ export class RateParametersController {
     );
   }
 
-  @get('/get-allparameters')
-  async InputParamtersTable(): Promise<any> {
-    let datos: any[] = await this.getAllParameters();
+  @get('/get-allparameters/{id}')
+  async InputParamtersTable(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getAllParameters(id);
     return datos;
   }
 
-  async getAllParameters() {
+  async getAllParameters(id: number) {
 
     return await this.parametroTarifaRepository.dataSource.execute(
-      `${viewOf.GET_ALL_PARAMETERS} WHERE tipo = 1`,
+      `${viewOf.GET_ALL_PARAMETERS} Where estado = ${id}`,
     );
   }
+
 }

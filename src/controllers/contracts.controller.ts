@@ -18,8 +18,8 @@ import {ContratoRepository} from '../repositories';
 export class ContractsController {
   constructor(
     @repository(ContratoRepository)
-    public contratoRepository : ContratoRepository,
-  ) {}
+    public contratoRepository: ContratoRepository,
+  ) { }
 
   @post('/contratos')
   @response(200, {
@@ -143,17 +143,19 @@ export class ContractsController {
     await this.contratoRepository.deleteById(id);
   }
 
-
-  @get('/get-contracts')
-  async ContractsTable(): Promise<any> {
-    let datos: any[] = await this.getContracts();
+  @get('/get-contracts/{id}')
+  async ContractsTable(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getContracts(id);
     return datos;
   }
 
-  async getContracts() {
+  async getContracts(id: number) {
 
     return await this.contratoRepository.dataSource.execute(
-      viewOf.GET_CONTRACTS,
+      `${viewOf.GET_CONTRACTS} Where estado = ${id}`,
     );
   }
+
 }
