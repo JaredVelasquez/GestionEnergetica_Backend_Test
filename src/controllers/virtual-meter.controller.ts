@@ -157,4 +157,5 @@ export class VirtualMeterController {
       `${viewOf.GET_Virtual_METERS} Where estado = ${id}`,
     );
   }
+
 }

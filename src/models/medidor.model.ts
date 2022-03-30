@@ -56,13 +56,6 @@ export class Medidor extends Entity {
 
   @property({
     type: 'number',
-    precision: 53,
-    mssql: {columnName: 'multiplicador', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  multiplicador?: number;
-
-  @property({
-    type: 'number',
     required: true,
     precision: 10,
     scale: 0,

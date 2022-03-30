@@ -17,3 +17,4 @@ export * from './contract-meter.controller';
 export * from './upload-file.controller';
 export * from './measuring-point.controller';
 export * from './roll-over.controller';
+export * from './virtual-meter-detail.controller';

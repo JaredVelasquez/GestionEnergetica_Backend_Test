@@ -143,16 +143,19 @@ export class EspecialChargesController {
     await this.cargosFacturaRepository.deleteById(id);
   }
 
-  @get('/get-especial-charges')
-  async EspecialChargesTable(): Promise<any> {
-    let datos: any[] = await this.getEspecialCharges();
+
+  @get('/get-especial-charges/{id}')
+  async EspecialChargesTable(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getEspecialCharges(id);
     return datos;
   }
 
-  async getEspecialCharges() {
+  async getEspecialCharges(id: number) {
 
     return await this.cargosFacturaRepository.dataSource.execute(
-      viewOf.GET_ESPECIAL_CHARGES,
+      `${viewOf.GET_ESPECIAL_CHARGES} Where estado = ${id}`,
     );
   }
 

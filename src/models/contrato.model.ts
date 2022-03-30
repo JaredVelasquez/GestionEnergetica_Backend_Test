@@ -52,9 +52,9 @@ export class Contrato extends Entity {
 
   @property({
     type: 'date',
-    mssql: {columnName: 'FechaVenc', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'fechaVenc', dataType: 'date', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  fechaVenc?: string;
+  fechaVencimiento?: string;
 
   @property({
     type: 'number',

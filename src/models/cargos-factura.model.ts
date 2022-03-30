@@ -81,12 +81,10 @@ export class CargosFactura extends Entity {
   observacion?: string;
 
   @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'estado', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    type: 'boolean',
+    mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  estado?: number;
+  estado?: boolean;
 
   // Define well-known properties here
 
