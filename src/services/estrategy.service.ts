@@ -1,6 +1,6 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 import {HttpErrors} from '@loopback/rest';
-import {UserProfile} from '@loopback/security';
+import {UserProfile} from '@loopback/security/dist';
 import {token} from '../core/interfaces/models/token.interface';
 
 @injectable({scope: BindingScope.TRANSIENT})

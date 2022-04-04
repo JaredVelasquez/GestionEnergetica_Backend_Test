@@ -1,4 +1,4 @@
-import {inject} from '@loopback/core';
+import {inject} from '@loopback/core/dist';
 import {
   get, HttpErrors,
   oas,

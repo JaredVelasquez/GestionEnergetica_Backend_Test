@@ -1,15 +1,15 @@
-import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
+import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core/dist';
 import {juggler} from '@loopback/repository';
 
 const config = {
   name: 'GestionEDBO',
   connector: 'mssql',
-  url: 'mssql://sa:1234@IT/GestionEnergetica',
-  host: 'DESKTOP-SPN633L',
+  url: 'mssql://sa:1234@IT-JVELASQUEZ/GestionEnergetica',
+  host: 'IT-JVELASQUEZ',
   port: 1433,
   user: 'sa',
   password: '1234',
-  database: 'InhdelvaDB'
+  database: 'GestionEnergetica'
 };
 
 // Observe application's life cycle to disconnect the datasource when

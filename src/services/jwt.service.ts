@@ -1,4 +1,4 @@
-import {BindingScope, injectable, service} from '@loopback/core';
+import {BindingScope, injectable, service} from '@loopback/core/dist';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {gCodeInterface} from '../core/interfaces/models/gCode.interface';

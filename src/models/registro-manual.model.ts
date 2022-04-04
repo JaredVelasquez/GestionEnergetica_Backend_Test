@@ -1,9 +1,9 @@
 import {Entity, model, property} from '@loopback/repository';
 
 @model({
-  settings: {idInjection: false, mssql: {schema: 'dbo', table: 'MedidorVirtualDetalle'}}
+  settings: {idInjection: false, mssql: {schema: 'dbo', table: 'RegistroManual'}}
 })
-export class MedidorVirtualDetalle extends Entity {
+export class RegistroManual extends Entity {
   @property({
     type: 'number',
     required: false,
@@ -28,9 +28,24 @@ export class MedidorVirtualDetalle extends Entity {
     required: true,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'vmedidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'variableId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
   })
-  vmedidorId: number;
+  variableId: number;
+
+  @property({
+    type: 'date',
+    required: true,
+    mssql: {columnName: 'fecha', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+  })
+  fecha: string;
+
+  @property({
+    type: 'number',
+    required: true,
+    precision: 53,
+    mssql: {columnName: 'valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
+  })
+  valor: number;
 
   @property({
     type: 'boolean',
@@ -45,13 +60,13 @@ export class MedidorVirtualDetalle extends Entity {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [prop: string]: any;
 
-  constructor(data?: Partial<MedidorVirtualDetalle>) {
+  constructor(data?: Partial<RegistroManual>) {
     super(data);
   }
 }
 
-export interface MedidorVirtualDetalleRelations {
+export interface RegistroManualRelations {
   // describe navigational properties here
 }
 
-export type MedidorVirtualDetalleWithRelations = MedidorVirtualDetalle & MedidorVirtualDetalleRelations;
+export type RegistroManualWithRelations = RegistroManual & RegistroManualRelations;

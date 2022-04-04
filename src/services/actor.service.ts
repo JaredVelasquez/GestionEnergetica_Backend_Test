@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable, service} from '@loopback/core/dist';
 import {repository} from '@loopback/repository';
 import {Request, Response} from '@loopback/rest';
 import path from 'path';

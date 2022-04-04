@@ -1,4 +1,4 @@
-import {inject} from '@loopback/core';
+import {inject} from '@loopback/core/dist';
 import {DefaultCrudRepository} from '@loopback/repository';
 import {GestionEdboDataSource} from '../datasources';
 import {CargosFactura, CargosFacturaRelations} from '../models';

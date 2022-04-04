@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -11,14 +12,18 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import {meterRelationSchema} from '../core/interfaces/models/meter.interface';
 import {viewOf} from '../core/library/views.library';
 import {MedidorVirtual} from '../models';
 import {MedidorVirtualRepository} from '../repositories';
+import {MeterService} from '../services';
 
 export class VirtualMeterController {
   constructor(
     @repository(MedidorVirtualRepository)
     public medidorVirtualRepository: MedidorVirtualRepository,
+    @service(MeterService)
+    private meterService: MeterService,
   ) { }
 
   @post('/medidor-virtuals')
@@ -41,6 +46,19 @@ export class VirtualMeterController {
   ): Promise<MedidorVirtual> {
     return this.medidorVirtualRepository.create(medidorVirtual);
   }
+
+
+
+  @post('/medidor-virtuals-custom')
+  @response(200, {
+    description: 'Usuario model instance',
+  })
+  async RegisterUser(
+    @requestBody() vmeterSchema: meterRelationSchema
+  ): Promise<any> {
+    return this.meterService.registerVirtualMeter(vmeterSchema);
+  }
+
 
   @get('/medidor-virtuals/count')
   @response(200, {

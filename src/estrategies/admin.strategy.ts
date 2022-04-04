@@ -1,7 +1,7 @@
-import {AuthenticationStrategy} from '@loopback/authentication';
-import {service} from '@loopback/core';
+import {AuthenticationStrategy} from '@loopback/authentication/dist';
+import {service} from '@loopback/core/dist';
 import {HttpErrors, RedirectRoute, Request} from '@loopback/rest';
-import {UserProfile} from '@loopback/security';
+import {UserProfile} from '@loopback/security/dist';
 import {ParamsDictionary} from 'express-serve-static-core';
 import parseBearerToken from 'parse-bearer-token';
 import {ParsedQs} from 'qs';

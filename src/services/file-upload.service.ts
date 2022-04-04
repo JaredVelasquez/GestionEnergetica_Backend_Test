@@ -4,7 +4,7 @@ import {
   ContextTags,
   injectable,
   Provider
-} from '@loopback/core';
+} from '@loopback/core/dist';
 import multer from 'multer';
 import {FILE_UPLOAD_SERVICE} from '../core/library/keys';
 import {FileUploadHandler} from '../core/library/types';

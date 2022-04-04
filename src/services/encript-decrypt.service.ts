@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 const CryptoJS = require('crypto-js');
 
 @injectable({scope: BindingScope.TRANSIENT})

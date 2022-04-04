@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 import {HttpErrors, Request, Response} from '@loopback/rest';
 import multer from "multer";
 import path from "path";

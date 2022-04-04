@@ -1,4 +1,4 @@
-import {service} from '@loopback/core';
+import {service} from '@loopback/core/dist';
 import {
   Count,
   CountSchema,

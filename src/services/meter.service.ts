@@ -1,6 +1,6 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 import {repository} from '@loopback/repository';
-import {meterRelationSchema, meterSchema} from '../core/interfaces/models/meter.interface';
+import {meterRelationSchema} from '../core/interfaces/models/meter.interface';
 import {MedidorRepository, MedidorVirtualDetalleRepository, MedidorVirtualRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -14,14 +14,10 @@ export class MeterService {
     private meterVirtualDetailRepository: MedidorVirtualDetalleRepository,
   ) { }
 
-  async registerMeter(meter: meterSchema) {
-    return await this.meterRespository.create(meter);
-  }
-
   async registerVirtualMeter(vmeter: meterRelationSchema) {
     const {medidorId, porcentaje, operacion, observacion, estado} = vmeter;
 
-    let newVirtualMeter = await this.virtualmeterRespository.create({medidorId, porcentaje, operacion, observacion, estado});
+    let newVirtualMeter = await this.virtualmeterRespository.create({porcentaje, operacion, observacion, estado});
 
     if (!newVirtualMeter)
       return "error al crear medidor virutal.";
@@ -40,6 +36,7 @@ export class MeterService {
     let result = {
       id: newRelationMeter.id,
       medidorId: vmeter.medidorId,
+      vmedidorId: newVirtualMeter.id,
       operacion: vmeter.operacion,
       porcentaje: vmeter.porcentaje,
       observacion: vmeter.observacion,

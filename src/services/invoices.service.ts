@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 import {repository} from '@loopback/repository';
 import {InvoicesInterface} from '../core/interfaces/models/invoices.interface';
 import {CargosFacturaRepository, ContratosMedidoresRepository, DetalleFacturaRepository, FacturaRepository, MedidorRepository, MedidorVirtualRepository, ParametroTarifaRepository, TarifaParametroDetalleRepository} from '../repositories';

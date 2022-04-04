@@ -1,7 +1,6 @@
 export interface meterSchema {
-  id?: number;
   codigo: string;
-  sourceId: string;
+  sourceId: number;
   descripcion: string;
   modelo: string;
   serie: string;
@@ -9,7 +8,7 @@ export interface meterSchema {
   puntoMedicionId: number;
   observacion: string;
   puntoConexion: number;
-  tipo: number;
+  tipo: boolean;
   registroDatos: boolean,
   almacenamientoLocal: boolean,
   funcionalidad: boolean,

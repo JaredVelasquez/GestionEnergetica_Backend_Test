@@ -1,5 +1,5 @@
-import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication';
-import {BootMixin} from '@loopback/boot';
+import {AuthenticationComponent, registerAuthenticationStrategy} from '@loopback/authentication/dist';
+import {BootMixin} from '@loopback/boot/dist';
 import {ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
 import {RestApplication} from '@loopback/rest';
@@ -7,7 +7,7 @@ import {
   RestExplorerBindings,
   RestExplorerComponent
 } from '@loopback/rest-explorer';
-import {ServiceMixin} from '@loopback/service-proxy';
+import {ServiceMixin} from '@loopback/service-proxy/dist';
 import multer from 'multer';
 import path from 'path';
 import {FILE_UPLOAD_SERVICE, STORAGE_DIRECTORY} from './core/library/keys';

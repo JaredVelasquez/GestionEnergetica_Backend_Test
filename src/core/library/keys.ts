@@ -1,4 +1,4 @@
-import {BindingKey} from '@loopback/core';
+import {BindingKey} from '@loopback/core/dist';
 import {FileUploadHandler} from './types'; // Binding key for the file upload service
 
 export const FILE_UPLOAD_SERVICE =

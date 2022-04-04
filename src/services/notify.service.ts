@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
 import {keys} from '../env/interfaces/Servicekeys.interface';
 const sgMail = require('@sendgrid/mail');
 

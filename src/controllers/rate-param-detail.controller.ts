@@ -19,6 +19,7 @@ export class RateParamDetailController {
   constructor(
     @repository(TarifaParametroDetalleRepository)
     public tarifaParametroDetalleRepository: TarifaParametroDetalleRepository,
+
   ) { }
 
   @post('/tarifa-parametro-detalles')

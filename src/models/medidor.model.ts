@@ -79,12 +79,11 @@ export class Medidor extends Entity {
   puntoConexion?: number;
 
   @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'tipo', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    type: 'boolean',
+    mssql: {columnName: 'tipo', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  tipo?: number;
+  tipo?: boolean;
+
 
   @property({
     type: 'boolean',

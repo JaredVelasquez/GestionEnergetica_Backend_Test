@@ -1,4 +1,4 @@
-import {BindingScope, injectable, service} from '@loopback/core';
+import {BindingScope, injectable, service} from '@loopback/core/dist';
 import {HttpErrors} from '@loopback/rest';
 import {JWTService} from '.';
 
