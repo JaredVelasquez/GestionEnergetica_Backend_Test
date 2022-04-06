@@ -70,9 +70,9 @@ export class InvoicesService {
 
     if (ListOfVirtualMeters) {
       for (let i = 0; i < ListOfVirtualMeters.length; i++) {
-        if (ListOfVirtualMeters[i].operacion === true) {
+        if (ListOfVirtualMeters[i].operacion === true && ListOfVirtualMeters[i].estado === true) {
           energiaConsumidaAjustada = energiaConsumidaAjustada + (invoice.energiaConsumida * ListOfVirtualMeters[i].porcentaje);
-        } else {
+        } else if (ListOfVirtualMeters[i].operacion === false && ListOfVirtualMeters[i].estado === true) {
           energiaConsumidaAjustada = energiaConsumidaAjustada - (invoice.energiaConsumida * ListOfVirtualMeters[i].porcentaje);
 
         }

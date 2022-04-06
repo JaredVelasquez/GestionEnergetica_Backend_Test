@@ -13,11 +13,12 @@ export class Medidor extends Entity {
   id?: number;
 
   @property({
-    type: 'string',
-    length: 100,
-    mssql: {columnName: 'sourceId', dataType: 'varchar', dataLength: 100, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'sourceId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  sourceId?: string;
+  sourceId?: number;
 
   @property({
     type: 'string',
@@ -84,6 +85,23 @@ export class Medidor extends Entity {
   })
   tipo?: boolean;
 
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'registroDatos', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  registroDatos?: boolean;
+
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'almacenamientoLocal', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  almacenamientoLocal?: boolean;
+
+  @property({
+    type: 'boolean',
+    mssql: {columnName: 'funcionalidad', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  funcionalidad?: boolean;
 
   @property({
     type: 'boolean',

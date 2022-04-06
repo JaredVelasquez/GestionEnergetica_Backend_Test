@@ -23,3 +23,4 @@ export * from './roll-over.model';
 export * from './medidor-virtual-detalle.model';
 export * from './variables.model';
 export * from './registro-manual.model';
+export * from './medidor.model';
