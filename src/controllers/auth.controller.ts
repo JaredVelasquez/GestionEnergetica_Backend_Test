@@ -18,14 +18,11 @@ import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.inte
 import {UsuarioRepository} from '../repositories';
 import {AuthService, JWTService} from '../services';
 import {Usuario} from './../models/usuario.model';
-import {ActoresRepository} from './../repositories/actores.repository';
 
 export class AuthController {
   constructor(
     @repository(UsuarioRepository)
     private usuarioRepository: UsuarioRepository,
-    @repository(ActoresRepository)
-    private actoresRepository: ActoresRepository,
     @service(JWTService)
     private jwtService: JWTService,
     @service(AuthService)
