@@ -8,7 +8,6 @@ export * from './invoices.controller';
 export * from './manual-registration.controller';
 export * from './measuring-point.controller';
 export * from './meters.controller';
-export * from './ping.controller';
 export * from './rate-param-detail.controller';
 export * from './rate-parameters.controller';
 export * from './rates.controller';
