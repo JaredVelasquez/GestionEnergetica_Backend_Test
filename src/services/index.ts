@@ -1,5 +1,5 @@
 export * from './actor.service';
-export * from './Auth.service';
+export * from './auth.service';
 export * from './encript-decrypt.service';
 export * from './estrategy.service';
 export * from './file-upload.service';
