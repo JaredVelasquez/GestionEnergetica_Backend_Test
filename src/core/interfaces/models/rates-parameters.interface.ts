@@ -1,6 +1,6 @@
 export interface ratesParametersInterface {
   idTarifa: number;
-  cargoId: number;
+  tipoCargoId: number;
   valor: number;
   fechaInicio: string;
   fechaFinal: string;

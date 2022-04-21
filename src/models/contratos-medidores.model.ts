@@ -63,62 +63,6 @@ export class ContratosMedidores extends Entity {
   fechaFinal?: string;
 
   @property({
-    type: 'number',
-    precision: 53,
-    mssql: {columnName: 'area', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  area?: number;
-
-  @property({
-    type: 'number',
-    precision: 10,
-    scale: 0,
-    mssql: {columnName: 'tipoServicioId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
-  })
-  tipoServicioId?: number;
-
-  @property({
-    type: 'boolean',
-    mssql: {columnName: 'trifasica', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
-  })
-  trifasica?: boolean;
-
-  @property({
-    type: 'number',
-    precision: 53,
-    mssql: {columnName: 'potencia', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  potencia?: number;
-
-  @property({
-    type: 'boolean',
-    required: true,
-    mssql: {columnName: 'iluminacionTC', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
-  })
-  iluminacionTc: boolean;
-
-  @property({
-    type: 'number',
-    precision: 53,
-    mssql: {columnName: 'iluminacionP', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  iluminacionP?: number;
-
-  @property({
-    type: 'boolean',
-    required: true,
-    mssql: {columnName: 'SComTC', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
-  })
-  sComTc: boolean;
-
-  @property({
-    type: 'number',
-    precision: 53,
-    mssql: {columnName: 'SComP', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
-  })
-  sComP?: number;
-
-  @property({
     type: 'string',
     length: -1,
     mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},

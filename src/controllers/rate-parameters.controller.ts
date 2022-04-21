@@ -58,7 +58,7 @@ export class RateParametersController {
     @requestBody() ratesParameters: ratesParametersInterface
   ): Promise<any> {
     let newParametro = {
-      tipoCargoId: ratesParameters.cargoId,
+      tipoCargoId: ratesParameters.tipoCargoId,
       fechaInicio: ratesParameters.fechaInicio,
       fechaFinal: ratesParameters.fechaFinal,
       valor: ratesParameters.valor,
@@ -81,7 +81,7 @@ export class RateParametersController {
 
     let createRelation = await this.tarifaParametroDetalleRepository.create(newRelation);
 
-    let existCargo = await this.TipoCargoRepository.findById(ratesParameters.cargoId);
+    let existCargo = await this.TipoCargoRepository.findById(ratesParameters.tipoCargoId);
 
     let result = {
       id: createRelation.id,
