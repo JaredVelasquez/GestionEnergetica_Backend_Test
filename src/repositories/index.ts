@@ -22,3 +22,8 @@ export * from './roll-over.repository';
 export * from './medidor-virtual-detalle.repository';
 export * from './registro-manual.repository';
 export * from './variables.repository';
+export * from './detalle-factura-manual.repository';
+export * from './factura-manual.repository';
+export * from './tipo-cargo-factura-manual.repository';
+export * from './tipo-contratos.repository';
+export * from './tipo-factura-manual.repository';

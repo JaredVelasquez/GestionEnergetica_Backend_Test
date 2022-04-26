@@ -25,3 +25,8 @@ export * from './variables.model';
 export * from './registro-manual.model';
 export * from './medidor.model';
 export * from './contratos-medidores.model';
+export * from './tipo-cargo-factura-manual.model';
+export * from './tipo-factura-manual.model';
+export * from './tipo-contratos.model';
+export * from './factura-manual.model';
+export * from './detalle-factura-manual.model';

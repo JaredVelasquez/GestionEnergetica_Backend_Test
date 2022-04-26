@@ -19,3 +19,5 @@ export * from './virtual-meter-detail.controller';
 export * from './virtual-meter.controller';
 export * from './zona.controller';
 
+export * from './factura-manual.controller';
+export * from './tipo-cargo-factura-manual.controller';
