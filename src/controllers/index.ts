@@ -21,3 +21,4 @@ export * from './zona.controller';
 
 export * from './factura-manual.controller';
 export * from './tipo-cargo-factura-manual.controller';
+export * from './manual-invoice-detail.controller';

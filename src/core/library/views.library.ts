@@ -14,4 +14,5 @@ export namespace viewOf {
   export const GET_PT_DETAIL = `SELECT * FROM dbo.GetTPdetalle`;
   export const GET_CMETERS = `SELECT * FROM dbo.GetCMedidores`;
   export const GET_MANUAL_REGISTERS = `SELECT * FROM dbo.GetRegistrosManuales`;
+  export const GET_MANUAL_INVOICE_DETAIL = `SELECT * FROM dbo.GetFacturasManuales`;
 }
