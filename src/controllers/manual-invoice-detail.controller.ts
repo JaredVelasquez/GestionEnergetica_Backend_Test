@@ -11,15 +11,71 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
+import {ChargueTypeManualInvoice} from '../core/interfaces/models/chargues-type.interface';
 import {viewOf} from '../core/library/views.library';
 import {DetalleFacturaManual} from '../models';
-import {DetalleFacturaManualRepository} from '../repositories';
+import {DetalleFacturaManualRepository, FacturaManualRepository, TipoCargoFacturaManualRepository} from '../repositories';
 
 export class ManualInvoiceDetailController {
   constructor(
     @repository(DetalleFacturaManualRepository)
     public detalleFacturaManualRepository: DetalleFacturaManualRepository,
+    @repository(TipoCargoFacturaManualRepository)
+    public tipoCargoFacturaManualRepository: TipoCargoFacturaManualRepository,
+    @repository(FacturaManualRepository)
+    public facturaManualRepository: FacturaManualRepository,
   ) { }
+
+  @post('/detalle-factura-manuals-custom')
+  @response(200, {
+    description: 'Usuario model instance',
+  })
+  async RegisterUser(
+    @requestBody() chargues: ChargueTypeManualInvoice
+  ): Promise<any> {
+
+    let newCargo = {
+      nombre: chargues.nombre,
+      valor: chargues.valor,
+      estado: true
+    }
+    console.log(newCargo);
+
+    let facturaExist = await this.facturaManualRepository.findById(chargues.facturaId);
+
+    console.log(facturaExist.id);
+
+    let cargo = await this.tipoCargoFacturaManualRepository.create(newCargo);
+
+
+    console.log(cargo.id);
+
+    let newRelation = {
+      facturaId: chargues.facturaId,
+      estado: chargues.estado,
+      tipoCargoId: cargo.id
+    }
+    let relation = await this.detalleFacturaManualRepository.create(newRelation);
+
+
+    let result = {
+      estado: relation.estado,
+      id: chargues.facturaId,
+      codigo: facturaExist.codigo,
+      contratoId: facturaExist.contratoId,
+      fechaEmision: facturaExist.fechaEmision,
+      fechaVencimiento: facturaExist.fechaVencimiento,
+      fechaInicial: facturaExist.fechaInicial,
+      fechaFinal: facturaExist.fechaInicial,
+      tipoFacturaId: facturaExist.tipoFacturaId,
+      detalleId: relation.id,
+      tipoCargoId: cargo.id,
+      nombre: chargues.nombre,
+      valor: chargues.valor,
+    }
+
+    return result;
+  }
 
   @post('/detalle-factura-manuals')
   @response(200, {
@@ -50,6 +106,7 @@ export class ManualInvoiceDetailController {
   async count(
     @param.where(DetalleFacturaManual) where?: Where<DetalleFacturaManual>,
   ): Promise<Count> {
+
     return this.detalleFacturaManualRepository.count(where);
   }
 
@@ -148,6 +205,7 @@ export class ManualInvoiceDetailController {
   async ParamtersTable(
   ): Promise<any> {
     let datos = await this.getTPdetail();
+
     return datos;
   }
 
