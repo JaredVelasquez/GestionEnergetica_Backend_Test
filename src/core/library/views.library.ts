@@ -15,4 +15,5 @@ export namespace viewOf {
   export const GET_CMETERS = `SELECT * FROM dbo.GetCMedidores`;
   export const GET_MANUAL_REGISTERS = `SELECT * FROM dbo.GetRegistrosManuales`;
   export const GET_MANUAL_INVOICE_DETAIL = `SELECT * FROM dbo.GetFacturasManuales`;
+  export const GET_IONDATA = `USE ION_Data SELECT * FROM dbo.GetIONDATA `;
 }

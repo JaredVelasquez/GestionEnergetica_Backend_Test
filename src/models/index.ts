@@ -30,3 +30,4 @@ export * from './tipo-factura-manual.model';
 export * from './tipo-contratos.model';
 export * from './factura-manual.model';
 export * from './detalle-factura-manual.model';
+export * from './data-log2.model';

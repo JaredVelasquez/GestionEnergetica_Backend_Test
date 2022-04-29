@@ -27,3 +27,4 @@ export * from './factura-manual.repository';
 export * from './tipo-cargo-factura-manual.repository';
 export * from './tipo-contratos.repository';
 export * from './tipo-factura-manual.repository';
+export * from './data-log2.repository';
