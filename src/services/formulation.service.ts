@@ -12,18 +12,15 @@ export class FormulationService {
   ) { }
 
   async searchValidInvoice(generateInvoice: GenerateInvoice) {
-    let facturaEEHVigente;
-    let facturaManualExist = await this.facturaManualRepository.find();
-
-    for (let i = 0; i < facturaManualExist.length; i++) {
-      if (facturaManualExist[i].fechaFinal <= Date.now().toString()) {
-        facturaEEHVigente = facturaManualExist[i];
-      }
-    }
-    console.log(facturaManualExist);
-
+    let facturaEEHVigente = await this.getFacturaEHH(generateInvoice);
 
     return facturaEEHVigente;
+  }
+
+  async getFacturaEHH(generateInvoice: GenerateInvoice) {
+    return await this.facturaManualRepository.dataSource.execute(
+      `${viewOf.GET_EHH_INVOICE} where fechaFinal between '${generateInvoice.fechaInicial}' and '${generateInvoice.fechaFinal}'`,
+    );
 
   }
 

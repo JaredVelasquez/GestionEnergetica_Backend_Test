@@ -158,4 +158,18 @@ export class MetersController {
       `${viewOf.GET_METERS} Where estado = ${id}`,
     );
   }
+
+  @get('/get-source')
+  async dataSource(
+  ): Promise<any> {
+    let datos = await this.getSource();
+    return datos;
+  }
+
+  async getSource() {
+
+    return await this.medidorRepository.dataSource.execute(
+      `${viewOf.GET_SOURCE}`,
+    );
+  }
 }
