@@ -13,6 +13,15 @@ export class Contrato extends Entity {
   id?: number;
 
   @property({
+    type: 'number',
+    required: false,
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'tipoContratoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+  })
+  tipoContratoId?: number;
+
+  @property({
     type: 'string',
     required: true,
     length: 50,

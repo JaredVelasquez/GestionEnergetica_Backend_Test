@@ -26,16 +26,7 @@ export class FormulationController {
   async RegisterUser(
     @requestBody() generateInvoice: GenerateInvoice
   ): Promise<any> {
-    let facturaEEHVigente = await this.formulationService.searchValidInvoice(generateInvoice);
-    console.log(facturaEEHVigente);
-
-    if (!facturaEEHVigente)
-      console.log("No se encontro una factura vigente");
-
-
-    let datos = await this.formulationService.getIONDATA(generateInvoice);
-    console.log(datos[0]);
-
+    await this.formulationService.generateInvoices(generateInvoice);
     return true;
   }
 
