@@ -2,7 +2,7 @@ import { /* inject, */ BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {GenerateInvoice} from '../core/interfaces/models/invoice-generete.interface';
 import {viewOf} from '../core/library/views.library';
-import {FacturaManualRepository} from '../repositories';
+import {FacturaManualRepository, MedidorRepository, MedidorVirtualRepository, RollOverRepository} from '../repositories';
 export interface Medidor {
   sourceName: string,
   totalLecturaActiva: number,
@@ -26,12 +26,22 @@ export class FormulationService {
   constructor(
     @repository(FacturaManualRepository)
     private facturaManualRepository: FacturaManualRepository,
+    @repository(MedidorRepository)
+    private medidorRepository: MedidorRepository,
+    @repository(MedidorVirtualRepository)
+    private medidorVirtualRepository: MedidorVirtualRepository,
+    @repository(RollOverRepository)
+    private rollOverRepository: RollOverRepository,
   ) { }
 
   async generateInvoices(generateInvoice: GenerateInvoice) {
+    let lecturasEnergiaActiva: ION_Data[] = [], lecturasEnergiaReactiva: ION_Data[] = [];
     let historicoMedidorConsumo: Array<Medidor> = [];
+    let facturasGeneradas: Array<any> = [];
+    let cargosFacturaEEHVigente: [] = [];
     let consumoEEH = ['FC.FC_MM_001', 'FC.FC_MM_002', 'FC.FC_MM_003', 'FC.FC_MM_004', 'FC.FC_MM_005', 'FC.FC_MM_010', 'FC.FC_MM_011', 'FC.FC_MM_012', 'FC.FC_MM_013', 'FC.FC_MM_014'];
     let consumoSolar = ['FC.FC_MM_006', 'FC.FC_MM_007', 'FC.FC_MM_008', 'FC.FC_MM_009'];
+    let frontera = 0;
     let EnergiaReactiva = 91, EnergiaActiva = 129;
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
     let CEF = 0, PBE = 0, EA = 0;
@@ -40,9 +50,6 @@ export class FormulationService {
     let RC = 0, FP = 0, ER = 0, PCFR = 0, EAPFR = 0;
     let PT = 0, TFPE = 0, PI = 0, ETCU = 0, ETO = 0;
 
-
-    let lecturasEnergiaActiva: ION_Data[] = [], lecturasEnergiaReactiva: ION_Data[] = [];
-
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
 
     if (!facturaEEHVigente)
@@ -50,27 +57,49 @@ export class FormulationService {
 
     lecturasEnergiaActiva = await this.getIONDATA(generateInvoice, EnergiaActiva);
     lecturasEnergiaReactiva = await this.getIONDATA(generateInvoice, EnergiaReactiva);
+    console.log(lecturasEnergiaReactiva);
 
     for (let i = 0; i < consumoEEH.length; i++) {
       for (let j = 0; j < lecturasEnergiaActiva.length; j += 2) {
-        console.log(i);
-        console.log(j);
+        let isRollover = false;
+        let auxActiva = lecturasEnergiaActiva[j + 1].Value, antesDeRolloverActiva = 0, antesDeRolloverReactiva = 0;
+        let auxReactiva = lecturasEnergiaReactiva[j + 1].Value;
 
-        if (lecturasEnergiaActiva[j].sourceName === consumoEEH[i] && lecturasEnergiaActiva[j].sourceName === consumoEEH[i]) {
-          historicoMedidorConsumo.push(
-            {
-              sourceName: lecturasEnergiaActiva[j].sourceName,
-              quantityID: lecturasEnergiaActiva[0].quantityID,
-              totalLecturaActiva: lecturasEnergiaActiva[j + 1].Value - lecturasEnergiaActiva[j].Value,
-              totalLecturaReactiva: lecturasEnergiaReactiva[j + 1].Value - lecturasEnergiaReactiva[j].Value
-            }
-          );
+        if (lecturasEnergiaActiva[j + 1].Value < lecturasEnergiaActiva[j].Value) {
+          isRollover = true;
         }
+        if (lecturasEnergiaActiva[j].sourceName === consumoEEH[i] && lecturasEnergiaActiva[j].sourceName === consumoEEH[i]) {
+          if (isRollover)
+            historicoMedidorConsumo.push(
+              {
+                sourceName: lecturasEnergiaActiva[j].sourceName,
+                quantityID: lecturasEnergiaActiva[0].quantityID,
+                totalLecturaActiva: lecturasEnergiaActiva[j + 1].Value,
+                totalLecturaReactiva: lecturasEnergiaReactiva[j + 1].Value
+              }
+            );
+          else
+            historicoMedidorConsumo.push(
+              {
+                sourceName: lecturasEnergiaActiva[j].sourceName,
+                quantityID: lecturasEnergiaActiva[0].quantityID,
+                totalLecturaActiva: lecturasEnergiaActiva[j + 1].Value - lecturasEnergiaActiva[j].Value,
+                totalLecturaReactiva: lecturasEnergiaReactiva[j + 1].Value - lecturasEnergiaReactiva[j].Value
+              }
+            );
+        }
+
+
+        lecturasEnergiaActiva[j + 1].Value = auxActiva;
+        lecturasEnergiaReactiva[j + 1].Value = auxReactiva;
 
       }
       //
     }
+    console.log(lecturasEnergiaActiva[24]);
+    console.log(lecturasEnergiaActiva[25]);
     console.log(historicoMedidorConsumo);
+
 
     ECR = 200000;
     ESG = 300000;
@@ -135,4 +164,47 @@ export class FormulationService {
 
   }
 
+  async identifyRollOvers(lecturasEnergiaActivaFinal: ION_Data, lecturasEnergiaActivaInicial: ION_Data, lecturasEnergiaReactivaInicial: ION_Data, lecturasEnergiaReactivaFinal: ION_Data) {
+    let isRollover = false;
+    let auxActiva = lecturasEnergiaActivaFinal.Value, antesDeRolloverActiva = 0, antesDeRolloverReactiva = 0;
+    let auxReactiva = lecturasEnergiaReactivaFinal.Value;
+
+    let medidorIdentificado = await this.medidorRepository.findOne({where: {sourceId: lecturasEnergiaActivaInicial.sourceID}});
+    let rollOver = await this.rollOverRepository.find({where: {medidorId: medidorIdentificado?.id}});
+
+
+    if (!rollOver)
+      console.log("No existen rollovers");
+
+    if (rollOver) {
+      for (let c = 0; c < rollOver.length; c++) {
+
+        if (rollOver[c].energia === true && rollOver[c].estado === true) {
+          if (Date.parse(rollOver[c].fechaInicial) <= Date.parse(lecturasEnergiaActivaFinal.Fecha) && Date.parse(rollOver[c].fechaInicial) >= Date.parse(lecturasEnergiaActivaInicial.Fecha) && medidorIdentificado?.sourceId === lecturasEnergiaActivaInicial.sourceID) {
+            lecturasEnergiaActivaFinal.Value += rollOver[c].lecturaAnterior;
+            antesDeRolloverActiva = rollOver[c].lecturaAnterior;
+            isRollover = true;
+          }
+        } else if (rollOver[c].energia === false && rollOver[c].estado === true) {
+          if (Date.parse(rollOver[c].fechaInicial) <= Date.parse(lecturasEnergiaReactivaInicial.Fecha) && Date.parse(rollOver[c].fechaInicial) >= Date.parse(lecturasEnergiaReactivaInicial.Fecha) && medidorIdentificado?.sourceId === lecturasEnergiaReactivaInicial.sourceID) {
+            lecturasEnergiaReactivaFinal.Value += rollOver[c].lecturaAnterior;
+            antesDeRolloverReactiva = rollOver[c].lecturaAnterior;
+            isRollover = true;
+          }
+
+        } else
+          isRollover = false;
+      }
+
+    }
+
+    return {
+      anteriorRollOverActiva: antesDeRolloverActiva,
+      anteriorRollOverReactiva: antesDeRolloverReactiva,
+      isRollover: isRollover,
+
+    }
+
+
+  }
 }
