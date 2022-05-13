@@ -59,10 +59,12 @@ export interface LecturasPorContrato {
     sourceID: number,
     sourceName: string,
     LecturaActiva: number,
-    LecturaReactiva: number
+    LecturaReactiva: number,
+    CEF?: number
   }],
   totalLecturaActivaAjustada: number,
   totalLecturaReactivaAjustada: number,
+  CEFTotal?: number
 }
 @injectable({scope: BindingScope.TRANSIENT})
 export class FormulationService {
@@ -87,7 +89,7 @@ export class FormulationService {
     let cargosFacturaEEHVigente: [] = [];
     let consumoEEH = ['FC.FC_MM_001', 'FC.FC_MM_002', 'FC.FC_MM_003', 'FC.FC_MM_004', 'FC.FC_MM_005', 'FC.FC_MM_010', 'FC.FC_MM_011', 'FC.FC_MM_012', 'FC.FC_MM_013', 'FC.FC_MM_014'];
     let consumoSolar = ['FC.FC_MM_006', 'FC.FC_MM_007', 'FC.FC_MM_008', 'FC.FC_MM_009'];
-    let frontera = 0;
+    let MedidorFronteraSourceID = 0;
     let EnergiaReactiva = 91, EnergiaActiva = 129;
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
     let CEF = 0, PBE = 0, EA = 0;
@@ -98,8 +100,6 @@ export class FormulationService {
     let i = 0;
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
-
-    console.log(medidores);
 
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
 
@@ -140,26 +140,24 @@ export class FormulationService {
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes);
 
     console.log(lecturasEnergiaActiva);
-
-    for (let i = 0; i < lecturasEnergiaActiva.length; i += 2) {
-      if (lecturasEnergiaActiva[i].sourceName === consumoSolar[i]) {
-        ESG += lecturasEnergiaActiva[i].Value;
-      }
-    }
-
-    console.log(ESG);
+    console.log(historicoMedidorConsumo);
 
 
-
-
-    ECR = 200000;
-    ESG = 300000;
-    EXR = 20000;
+    ESG = await this.SumaEnergiaDeMedidores(consumoSolar, historicoMedidorConsumo);
+    console.log('Total energia solar generada : ' + ESG);
+    ECR = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
+    console.log('Total energia externa consumida : ' + ECR);
+    let EMFR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, generateInvoice);
+    EXR = ESG * 0.0017;
+    console.log('Total energia fotovoltaica exportada : ' + EXR);
     EAC = ESG - EXR;
+    console.log('Total energia fotovoltaica utilizada : ' + EAC);
     FS = EAC / (ECR + EAC);
-    PBE = 4.40;
-    EA = 80000;
-    CEF = PBE * FS * EA;
+    console.log('Porcenaje de consumo solar : ' + FS);
+    PBE = await this.ObtenerTarifaVigente(1, generateInvoice, 13);
+    console.log('Tarifa : ' + PBE);
+    let lecturasConCEF = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS);
+
     CEP = 90000;
     PCF = ((1 - FS) * EA) / (ECR);
     CEC = CEP * PCF;
@@ -220,6 +218,14 @@ export class FormulationService {
       `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} ORDER BY sourceName ASC`,
     );
 
+  }
+
+  async ObtenerTarifaVigente(estado: number, data: GenerateInvoice, tipoCargoId: number): Promise<number> {
+    let Tarifa = await this.facturaManualRepository.dataSource.execute(
+      `${viewOf.GET_PT_DETAIL} WHERE estado = ${estado} and (fechaInicio >= '${data.fechaInicial}' and fechaFinal >= '${data.fechaFinal}') and tipoCargoId = ${tipoCargoId}`,
+    );
+
+    return Tarifa[0].valor ? Tarifa[0].valor : 0;
   }
 
   async identifyRollOvers(lecturasEnergiaActivaFinal: ION_Data, lecturasEnergiaActivaInicial: ION_Data, lecturasEnergiaReactivaInicial: ION_Data, lecturasEnergiaReactivaFinal: ION_Data) {
@@ -297,6 +303,14 @@ export class FormulationService {
     return contratosVigentes;
   }
 
+  async ObetenerLecturasManualesPorFecha(fechaInicial: string, fechaFinal: string) {
+    let lecturasManuales = this.medidorRepository.dataSource.execute(
+      `${viewOf.GET_MANUAL_REGISTERS_FOR_DATE} where sourceId = 0 and (fecha = '${fechaInicial}' or fecha = '${fechaFinal}')`,
+    );
+
+    return lecturasManuales;
+  }
+
 
   async identifyMetersOnContract(lecturasMedidores: MedidorSelect[], listadoContratosMedidor: ContractMeter[]) {
     let LecturasResultantes: LecturasPorContrato[] = [];
@@ -340,11 +354,48 @@ export class FormulationService {
         }
       }
     }
-    console.log(LecturasResultantes[0]);
+
+    return LecturasResultantes;
   }
 
-  async filterActiveMeters(listaMedidores: string[], listadoContratosMedidor: ContractMeter[]) {
+  async SumaEnergiaDeMedidores(listaMedidores: string[], LecturasPorMedidor: MedidorSelect[]) {
+    let TotalEnergia = 0;
 
+    if (LecturasPorMedidor.length > 0)
+      for (let i = 0; i < listaMedidores.length; i++) {
+        for (let j = 0; j < LecturasPorMedidor.length; j++) {
+          if (listaMedidores[i] === LecturasPorMedidor[j].sourceName) {
+            TotalEnergia += LecturasPorMedidor[j].totalLecturaActiva;
+          }
+        }
+      }
+
+    return TotalEnergia;
+  }
+
+  async LecturasMedidorFrontera(MedidorFronteraSourceID: number, LecturasPorMedidor: MedidorSelect[], data: GenerateInvoice) {
+    let LecturasFrontera = 0;
+    for (let i = 0; i < LecturasPorMedidor.length; i++) {
+      if (LecturasPorMedidor[i].sourceId === MedidorFronteraSourceID) {
+        LecturasFrontera += LecturasPorMedidor[i].totalLecturaActiva;
+      }
+    }
+    if (LecturasFrontera == 0) {
+      let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(data.fechaInicial, data.fechaFinal);
+      if (lecturasManuales.length > 1) {
+        LecturasFrontera = lecturasManuales[1].valor - lecturasManuales[0].valor;
+      }
+    }
+    return LecturasFrontera;
+  }
+
+  async CargoPorEnergiaFotovoltaicaPorMedidor(LecturasPorMedidor: LecturasPorContrato[], PBE: number, FS: number) {
+    for (let i = 0; i < LecturasPorMedidor.length; i++) {
+      for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
+        LecturasPorMedidor[i].medidor[j].CEF = PBE * FS * LecturasPorMedidor[i].medidor[j].LecturaActiva;
+      }
+    }
+    return LecturasPorMedidor;
 
   }
 }
