@@ -21,4 +21,7 @@ export namespace viewOf {
   export const GET_METERS_ON_CONTRACT = `SELECT *FROM dbo.GetMedidoresActivos src where ID != 5 and  ID != 4 and  ID != 3 and  ID != 1  and  ID != 2  ORDER BY Name ASC`;
   export const GET_ALL_IONDATA = `SELECT *, dateadd(hour,-6,TimestampUTC) Fecha FROM dbo.GetAllIONDATA`;
   export const GET_MANUAL_REGISTERS_FOR_DATE = `SELECT * FROM dbo.GetRegistrosManualesPorMedidor`;
+  export const GET_EEHINVOICE_CHARGUES = ` SELECT * FROM dbo.GetCargosXFactura `;
+
+
 }
