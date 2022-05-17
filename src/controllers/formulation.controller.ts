@@ -26,8 +26,7 @@ export class FormulationController {
   async RegisterUser(
     @requestBody() generateInvoice: GenerateInvoice
   ): Promise<any> {
-    await this.formulationService.generateInvoices(generateInvoice);
-    return true;
+    return await this.formulationService.generateInvoices(generateInvoice);
   }
 
 }
