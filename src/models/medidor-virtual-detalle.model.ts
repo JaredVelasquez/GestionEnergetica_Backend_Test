@@ -33,6 +33,15 @@ export class MedidorVirtualDetalle extends Entity {
   vmedidorId: number;
 
   @property({
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'sourceId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+  })
+  sourceId: number;
+
+  @property({
     type: 'boolean',
     required: true,
     mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},

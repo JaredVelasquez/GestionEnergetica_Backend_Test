@@ -82,6 +82,13 @@ export interface LecturasPorContrato {
 
     }
   ],
+  vmedidor?: [
+    {
+      descripcion: string,
+      LecturaActiva: number,
+      LecturaReactiva: number,
+    }
+  ],
   totalLecturaActivaAjustada: number,
   totalLecturaReactivaAjustada: number,
   CEFTotal: number,
@@ -114,7 +121,6 @@ export class FormulationService {
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
     let PBE = 0;
     let PI = 0, ETCU = 0, ETO = 0;
-    let i = 0;
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
 
@@ -127,39 +133,12 @@ export class FormulationService {
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva);
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva);
     let contratosVigentes = await this.metersOnContract(hoy);
-
-    for (let j = 0; j < lecturasEnergiaActiva.length; j += 2) {
-      let auxActiva = lecturasEnergiaActiva[j + 1].Value;
-      let auxReactiva = lecturasEnergiaReactiva[j + 1].Value;
-
-
-      let resultadoRollOver = await this.identifyRollOvers(lecturasEnergiaActiva[j + 1], lecturasEnergiaActiva[j], lecturasEnergiaReactiva[j], lecturasEnergiaReactiva[j + 1]);
-      let medidorVirtualAplicados = await this.aplyVirtualMeters(lecturasEnergiaActiva[j], resultadoRollOver.LecturaActivaFinal, resultadoRollOver.LecturaReactivaFinal);
-
-
-      if (lecturasEnergiaActiva[j].sourceID === medidores[i].ID && lecturasEnergiaActiva[j].sourceID === medidores[i].ID && lecturasEnergiaReactiva[j].sourceID === medidores[i].ID) {
-        historicoMedidorConsumo.push(
-          {
-            sourceId: lecturasEnergiaActiva[j].sourceID,
-            sourceName: lecturasEnergiaActiva[j].sourceName,
-            quantityID: lecturasEnergiaActiva[0].quantityID,
-            totalLecturaActiva: medidorVirtualAplicados.LecturaActivaAjustada,
-            totalLecturaReactiva: medidorVirtualAplicados.LecturaReactivaAjustada,
-          }
-        );
-      }
-
-      lecturasEnergiaActiva[j + 1].Value = auxActiva;
-      lecturasEnergiaReactiva[j + 1].Value = auxReactiva;
-      i++;
-    }
-
+    historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, medidores)
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes);
     console.log(historicoMedidorConsumo);
 
     ESG = await this.SumaEnergiaDeMedidores(consumoSolar, historicoMedidorConsumo);
     console.log('Total energia solar generada : ' + ESG);
-    //ECR = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
     ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, generateInvoice, EnergiaActiva);
     ECR *= 6000;
     console.log('Total energia externa consumida : ' + ECR);
@@ -239,7 +218,6 @@ export class FormulationService {
 
   }
 
-
   async identifyRollOvers(lecturasEnergiaActivaFinal: ION_Data, lecturasEnergiaActivaInicial: ION_Data, lecturasEnergiaReactivaInicial: ION_Data, lecturasEnergiaReactivaFinal: ION_Data) {
 
     let medidorIdentificado = await this.medidorRepository.findOne({where: {sourceId: lecturasEnergiaActivaInicial.sourceID}});
@@ -267,6 +245,7 @@ export class FormulationService {
     }
 
     return {
+      sourceId: lecturasEnergiaActivaFinal.sourceID,
       LecturaActivaFinal: lecturasEnergiaActivaFinal.Value - lecturasEnergiaActivaInicial.Value,
       LecturaReactivaFinal: lecturasEnergiaReactivaFinal.Value - lecturasEnergiaReactivaInicial.Value,
 
@@ -275,11 +254,12 @@ export class FormulationService {
 
   }
 
-  async aplyVirtualMeters(lecturasEnergiaActivaFinal: ION_Data, lecturaEnergiaActivaFinal: number, lecturaEnergiaReactivaFinal: number) {
+  async aplyVirtualMeters(lecturasEnergiaActivaFinal: ION_Data, lecturaEnergiaActivaFinal: number, lecturaEnergiaReactivaFinal: number, rollOvers: any) {
     let medidorIdentificado = await this.medidorRepository.findOne({where: {sourceId: lecturasEnergiaActivaFinal.sourceID}});
     let medidoresVirtualesRelacionados = await this.medidorVirtualDetalleRepository.find({where: {medidorId: medidorIdentificado?.id}});
     let LecturaActivaAjustada = lecturaEnergiaActivaFinal, LecturaReactivaAjustada = lecturaEnergiaReactivaFinal;
     let isAplicated = false;
+    let LecturasMedidorDeducido;
     if (medidoresVirtualesRelacionados) {
       for (let i = 0; i < medidoresVirtualesRelacionados.length; i++) {
         let medidoresVirutalesIdentificados = await this.medidorVirtualRepository.findOne({where: {id: medidoresVirtualesRelacionados[i].vmedidorId}});
@@ -291,7 +271,8 @@ export class FormulationService {
           LecturaReactivaAjustada = lecturaEnergiaReactivaFinal - (lecturaEnergiaReactivaFinal * medidoresVirutalesIdentificados.porcentaje);
         }
 
-        if (medidoresVirutalesIdentificados?.operacion === true && medidoresVirtualesRelacionados[i].estado === true) {
+        if (medidoresVirutalesIdentificados?.operacion === true && medidoresVirtualesRelacionados[i].estado === true && medidoresVirtualesRelacionados[i].sourceId) {
+
           LecturaActivaAjustada = lecturaEnergiaActivaFinal + (lecturaEnergiaActivaFinal * medidoresVirutalesIdentificados.porcentaje);
           LecturaReactivaAjustada = lecturaEnergiaReactivaFinal + (lecturaEnergiaReactivaFinal * medidoresVirutalesIdentificados.porcentaje);
         }
@@ -303,9 +284,43 @@ export class FormulationService {
     return {
       LecturaActivaAjustada: LecturaActivaAjustada,
       LecturaReactivaAjustada: LecturaReactivaAjustada,
-      medidoresVirtualesAplicados: isAplicated
+      medidoresVirtualesAplicados: isAplicated,
+      LecturasResultantes: LecturasMedidorDeducido
     }
   }
+
+  async LecturasAjustadas(lecturasEnergiaActiva: ION_Data[], lecturasEnergiaReactiva: ION_Data[], medidores: any) {
+    let i = 0;
+    let historicoMedidorConsumo: Array<MedidorSelect> = []
+
+    for (let j = 0; j < lecturasEnergiaActiva.length; j += 2) {
+      let auxActiva = lecturasEnergiaActiva[j + 1].Value;
+      let auxReactiva = lecturasEnergiaReactiva[j + 1].Value;
+
+
+      let resultadoRollOver = await this.identifyRollOvers(lecturasEnergiaActiva[j + 1], lecturasEnergiaActiva[j], lecturasEnergiaReactiva[j], lecturasEnergiaReactiva[j + 1]);
+
+
+      if (lecturasEnergiaActiva[j].sourceID === medidores[i].ID && lecturasEnergiaActiva[j].sourceID === medidores[i].ID && lecturasEnergiaReactiva[j].sourceID === medidores[i].ID) {
+        historicoMedidorConsumo.push(
+          {
+            sourceId: lecturasEnergiaActiva[j].sourceID,
+            sourceName: lecturasEnergiaActiva[j].sourceName,
+            quantityID: lecturasEnergiaActiva[0].quantityID,
+            totalLecturaActiva: resultadoRollOver.LecturaActivaFinal,
+            totalLecturaReactiva: resultadoRollOver.LecturaActivaFinal,
+          }
+        );
+      }
+
+      lecturasEnergiaActiva[j + 1].Value = auxActiva;
+      lecturasEnergiaReactiva[j + 1].Value = auxReactiva;
+      i++;
+    }
+    return historicoMedidorConsumo;
+  }
+
+
 
   async metersOnContract(today: string) {
     let contratosVigentes = this.medidorRepository.dataSource.execute(
@@ -337,6 +352,7 @@ export class FormulationService {
     let LecturasResultantes: LecturasPorContrato[] = [];
     let isDetected = false;
 
+    //let medidorVirtualAplicados = await this.aplyVirtualMeters(lecturasEnergiaActiva[j], resultadoRollOver.LecturaActivaFinal, resultadoRollOver.LecturaReactivaFinal, resultadoRollOver);
     for (let i = 0; i < lecturasMedidores.length; i++) {
       for (let j = 0; j < listadoContratosMedidor.length; j++) {
         isDetected = false;
