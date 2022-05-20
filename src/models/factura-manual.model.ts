@@ -67,6 +67,15 @@ export class FacturaManual extends Entity {
   fechaVencimiento: string;
 
   @property({
+    type: 'number',
+    required: false,
+    precision: 53,
+    mssql: {columnName: 'valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  cargoReactivo?: number;
+
+
+  @property({
     type: 'boolean',
     required: true,
     mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
