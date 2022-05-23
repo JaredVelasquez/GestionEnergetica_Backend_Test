@@ -99,7 +99,8 @@ export interface LecturasPorContrato {
   totalLecturaReactivaAjustada: number,
   CEFTotal: number,
   PCFTotal: number,
-  PCFRTotal: number
+  PCFRTotal: number,
+  FPTotal: number
 
 
 }
@@ -133,8 +134,10 @@ export class FormulationService {
 
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
 
-    if (!facturaEEHVigente)
+    if (facturaEEHVigente.length < 1) {
+      console.log("No se encontro una factura vigente");
       return "No se encontro una factura vigente";
+    }
 
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva);
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva);
@@ -505,6 +508,7 @@ export class FormulationService {
               CEFTotal: 0,
               PCFTotal: 0,
               PCFRTotal: 0,
+              FPTotal: 0
             });
 
           }
@@ -621,7 +625,8 @@ export class FormulationService {
     for (let i = 0; i < listadoContratosMedidor.length; i++) {
       for (let j = 0; j < listadoContratosMedidor[i].medidor.length; j++) {
         let total = listadoContratosMedidor[i].medidor[j].LecturaActiva + listadoContratosMedidor[i].medidor[j].LecturaReactiva;
-        listadoContratosMedidor[i].medidor[j].FP = (listadoContratosMedidor[i].medidor[j].LecturaActiva) / Math.sqrt(Math.pow(listadoContratosMedidor[i].medidor[j].LecturaActiva, 2) + Math.pow(listadoContratosMedidor[i].medidor[j].LecturaReactiva, 2))
+        listadoContratosMedidor[i].medidor[j].FP = (listadoContratosMedidor[i].medidor[j].LecturaActiva) / Math.sqrt(Math.pow(listadoContratosMedidor[i].medidor[j].LecturaActiva, 2) + Math.pow(listadoContratosMedidor[i].medidor[j].LecturaReactiva, 2));
+        listadoContratosMedidor[i].FPTotal += listadoContratosMedidor[i].medidor[j].FP;
         console.log('resultado: ' + listadoContratosMedidor[i].medidor[j].FP);
 
         console.log(listadoContratosMedidor[i].medidor[j].FP);
