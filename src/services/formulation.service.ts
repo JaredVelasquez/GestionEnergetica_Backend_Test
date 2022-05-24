@@ -6,9 +6,17 @@ import {FacturaManualRepository, MedidorRepository, MedidorVirtualDetalleReposit
 export interface MedidorSelect {
   sourceId: number
   sourceName: string,
+  descripcion?: string,
   totalLecturaActiva: number,
   totalLecturaReactiva: number,
-  quantityID: number
+  quantityID: number,
+  lecturaActivaActual: number,
+  lecturaActivaAnterior: number,
+  lecturaReactivaActual: number,
+  lecturaReactivaAnterior: number,
+  fechaActual: string,
+  fechaAnterior: string,
+  multiplicador: number,
 }
 
 export interface ION_Data {
@@ -42,7 +50,9 @@ export interface ContractMeter {
   fechaCreacion: string,
   fechaVenc: string,
   observacion: string,
-  zonaId: number
+  zonaId: number,
+  diaGeneracion: number,
+  diasDisponibles: number,
 }
 
 export interface CargosFacturaEEH {
@@ -66,7 +76,9 @@ export interface LecturasPorContrato {
     contratoCodigo: string,
     fechaInicial: string,
     fechaFinal: string,
-    cliente: string
+    cliente: string,
+    diasDisponibles: number,
+    diaGeneracion: number,
   },
   cargo?:
   [
@@ -81,10 +93,20 @@ export interface LecturasPorContrato {
       sourceName: string,
       LecturaActiva: number,
       LecturaReactiva: number,
+      descripcion: string,
       CEF: number,
       PCF: number,
       FP: number,
-      PCFR: number
+      PCFR: number,
+      historico: {
+        lecturaActivaActual: number,
+        lecturaActivaAnterior: number,
+        lecturaReactivaActual: number,
+        lecturaReactivaAnterior: number,
+        fechaActual: string,
+        fechaAnterior: string,
+        multiplicador: number,
+      }
 
     }
   ],
@@ -135,8 +157,7 @@ export class FormulationService {
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
 
     if (facturaEEHVigente.length < 1) {
-      console.log("No se encontro una factura vigente");
-      return "No se encontro una factura vigente";
+      return {error: "No se encontro una factura vigente"};
     }
 
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva);
@@ -145,40 +166,33 @@ export class FormulationService {
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, medidores)
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes, facturaEEHVigente[0]);
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
-    //console.log(historicoMedidorConsumo);
-
     ESG = await this.SumaEnergiaDeMedidores(consumoSolar, historicoMedidorConsumo);
-    console.log('Total energia solar generada : ' + ESG);
-    ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, generateInvoice, EnergiaActiva);
-    ECR *= 6000;
-    console.log('Total energia externa consumida : ' + ECR);
+    let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva);
+    ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActiva, lecturasManuales);
     ETCU = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
-    console.log('Energia Activa total consumida por clientes : ' + ETCU);
-    EXR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, generateInvoice, EnergiaActivaExportada);
-    EXR *= 6000;
-    console.log('Total energia exportada : ' + EXR);
+    lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada);
+    EXR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales);
+    console.log('EXR: ' + EXR);
     EAC = ESG - EXR;
-    console.log('Total energia fotovoltaica utilizada : ' + EAC);
     FS = EAC / (ECR + EAC);
-    console.log('Porcenaje de consumo solar : ' + FS);
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
-    console.log('Tarifa : ' + PBE);
     ETO = EAC + ECR;
-    console.log('Energía total obtenida : ' + ETO);
+    console.log('PBE: ' + PBE);
+    console.log('FS: ' + FS);
+    console.log('ESG: ' + ESG);
+    console.log('EXR: ' + EXR);
+    console.log('ECR: ' + ECR);
 
     let listadoCargos = await this.ObetenerCargosPorFactura(facturaEEHVigente[0].id);
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, FS, ECR);
-
     lecturasMedidoresPorContrato = await this.DistribucionCargosPorCliente(listadoCargos, lecturasMedidoresPorContrato, facturaEEHVigente[0].cargoReactivo);
     PI = 1 - (ETCU / ETO);
-    console.log('Fracción de Perdidas Internas totales : ' + PI);
+
     console.log(lecturasMedidoresPorContrato[7]);
     console.log(lecturasMedidoresPorContrato[8]);
-    console.log(facturaEEHVigente);
-
 
     return lecturasMedidoresPorContrato;
   }
@@ -242,6 +256,7 @@ export class FormulationService {
         if (rollOver[c].energia === true && rollOver[c].estado === true) {
           if (Date.parse(rollOver[c].fechaInicial) <= Date.parse(lecturasEnergiaActivaFinal.Fecha) && Date.parse(rollOver[c].fechaInicial) >= Date.parse(lecturasEnergiaActivaInicial.Fecha) && medidorIdentificado?.id === rollOver[c].medidorId) {
             lecturasEnergiaActivaFinal.Value += lecturasEnergiaActivaInicial.Value;
+            lecturasEnergiaActivaFinal.Value *= medidorIdentificado?.multiplicador || 1;
           }
         }
 
@@ -250,6 +265,7 @@ export class FormulationService {
             console.log(lecturasEnergiaReactivaFinal.Value + ' + ' + lecturasEnergiaReactivaInicial.Value + ' = ');
 
             lecturasEnergiaReactivaFinal.Value += lecturasEnergiaReactivaInicial.Value;
+            lecturasEnergiaActivaFinal.Value *= medidorIdentificado?.multiplicador || 1;
           }
 
         }
@@ -259,9 +275,14 @@ export class FormulationService {
 
     return {
       sourceId: lecturasEnergiaActivaFinal.sourceID,
+      descripcion: medidorIdentificado?.descripcion,
       LecturaActivaFinal: lecturasEnergiaActivaFinal.Value - lecturasEnergiaActivaInicial.Value,
       LecturaReactivaFinal: lecturasEnergiaReactivaFinal.Value - lecturasEnergiaReactivaInicial.Value,
-
+      lecturaActivaActual: lecturasEnergiaActivaFinal.Value,
+      lecturaActivaAnterior: lecturasEnergiaActivaInicial.Value,
+      lecturaReactivaActual: lecturasEnergiaReactivaFinal.Value,
+      lecturaReactivaAnterior: lecturasEnergiaReactivaInicial.Value,
+      multiplicador: medidorIdentificado?.multiplicador,
     }
 
 
@@ -406,10 +427,18 @@ export class FormulationService {
         historicoMedidorConsumo.push(
           {
             sourceId: lecturasEnergiaActiva[j].sourceID,
+            descripcion: resultadoRollOver.descripcion,
             sourceName: lecturasEnergiaActiva[j].sourceName,
             quantityID: lecturasEnergiaActiva[0].quantityID,
             totalLecturaActiva: resultadoRollOver.LecturaActivaFinal,
             totalLecturaReactiva: resultadoRollOver.LecturaReactivaFinal,
+            lecturaActivaActual: resultadoRollOver.lecturaActivaActual,
+            lecturaActivaAnterior: resultadoRollOver.lecturaActivaAnterior,
+            lecturaReactivaActual: resultadoRollOver.lecturaReactivaActual,
+            lecturaReactivaAnterior: resultadoRollOver.lecturaReactivaAnterior,
+            fechaActual: lecturasEnergiaActiva[j + 1].Fecha,
+            fechaAnterior: lecturasEnergiaActiva[j].Fecha,
+            multiplicador: resultadoRollOver.multiplicador || 1,
           }
         );
       }
@@ -462,6 +491,7 @@ export class FormulationService {
               if (listadoContratosMedidor[j].codigoContrato === LecturasResultantes[c].contrato.contratoCodigo) {
                 LecturasResultantes[c].medidor.push({
                   sourceID: lecturasMedidores[i].sourceId,
+                  descripcion: lecturasMedidores[i].descripcion || '',
                   sourceName: lecturasMedidores[i].sourceName,
                   LecturaActiva: lecturasMedidores[i].totalLecturaActiva,
                   LecturaReactiva: lecturasMedidores[i].totalLecturaReactiva,
@@ -469,6 +499,15 @@ export class FormulationService {
                   PCF: 0,
                   FP: 0,
                   PCFR: 0,
+                  historico: {
+                    fechaActual: lecturasMedidores[i].fechaActual,
+                    fechaAnterior: lecturasMedidores[i].fechaActual,
+                    lecturaActivaActual: lecturasMedidores[i].lecturaActivaActual,
+                    lecturaActivaAnterior: lecturasMedidores[i].lecturaActivaAnterior,
+                    lecturaReactivaActual: lecturasMedidores[i].lecturaReactivaActual,
+                    lecturaReactivaAnterior: lecturasMedidores[i].lecturaReactivaAnterior,
+                    multiplicador: lecturasMedidores[i].multiplicador,
+                  }
                 });
                 LecturasResultantes[c].totalLecturaActivaAjustada += lecturasMedidores[i].totalLecturaActiva;
                 LecturasResultantes[c].totalLecturaReactivaAjustada += lecturasMedidores[i].totalLecturaReactiva;
@@ -491,17 +530,29 @@ export class FormulationService {
                 contratoCodigo: listadoContratosMedidor[j].codigoContrato,
                 fechaInicial: listadoContratosMedidor[j].fechaInicial,
                 fechaFinal: listadoContratosMedidor[j].fechaFinal,
-                cliente: listadoContratosMedidor[j].nombreActor
+                cliente: listadoContratosMedidor[j].nombreActor,
+                diasDisponibles: listadoContratosMedidor[j].diasDisponibles,
+                diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,
                 sourceName: lecturasMedidores[i].sourceName,
+                descripcion: lecturasMedidores[i].descripcion || '',
                 LecturaActiva: lecturasMedidores[i].totalLecturaActiva,
                 LecturaReactiva: lecturasMedidores[i].totalLecturaReactiva,
                 CEF: 0,
                 PCF: 0,
                 FP: 0,
                 PCFR: 0,
+                historico: {
+                  fechaActual: lecturasMedidores[i].fechaActual,
+                  fechaAnterior: lecturasMedidores[i].fechaAnterior,
+                  lecturaActivaActual: lecturasMedidores[i].lecturaActivaActual,
+                  lecturaActivaAnterior: lecturasMedidores[i].lecturaActivaAnterior,
+                  lecturaReactivaActual: lecturasMedidores[i].lecturaReactivaActual,
+                  lecturaReactivaAnterior: lecturasMedidores[i].lecturaReactivaAnterior,
+                  multiplicador: lecturasMedidores[i].multiplicador,
+                }
               }],
               totalLecturaActivaAjustada: lecturasMedidores[i].totalLecturaActiva,
               totalLecturaReactivaAjustada: lecturasMedidores[i].totalLecturaReactiva,
@@ -536,7 +587,7 @@ export class FormulationService {
     return TotalEnergia;
   }
 
-  async LecturasMedidorFrontera(MedidorFronteraSourceID: number, LecturasPorMedidor: MedidorSelect[], data: GenerateInvoice, quantityID: number) {
+  async LecturasMedidorFrontera(MedidorFronteraSourceID: number, LecturasPorMedidor: MedidorSelect[], quantityID: number, lecturasManuales: any[]) {
     let LecturasFrontera = 0;
     for (let i = 0; i < LecturasPorMedidor.length; i++) {
       if (LecturasPorMedidor[i].sourceId === MedidorFronteraSourceID && LecturasPorMedidor[i].quantityID === quantityID) {
@@ -544,9 +595,8 @@ export class FormulationService {
       }
     }
     if (LecturasFrontera == 0) {
-      let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(data.fechaInicial, data.fechaFinal, quantityID);
       if (lecturasManuales.length > 1) {
-        LecturasFrontera = lecturasManuales[1].valor - lecturasManuales[0].valor;
+        LecturasFrontera = (lecturasManuales[1].valor * lecturasManuales[0].multiplicador) - (lecturasManuales[0].valor * lecturasManuales[0].multiplicador);
       }
     }
     console.log(LecturasFrontera);

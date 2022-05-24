@@ -150,7 +150,22 @@ export class InvoicesController {
   async getInvoices(id: number) {
 
     return await this.facturaRepository.dataSource.execute(
-      `${viewOf.GET_INVOICES} Where estado = ${id}`,
+      `${viewOf.GET_INVOICES} Where estado = ${id} `,
+    );
+  }
+
+  @get('/get-invoices-contract/{id}')
+  async InvoiceHistoric(
+    @param.path.number('id') id: number
+  ): Promise<any> {
+    let datos = await this.getHistoric(id);
+    return datos;
+  }
+
+  async getHistoric(id: number) {
+
+    return await this.facturaRepository.dataSource.execute(
+      `${viewOf.GET_INVOICES} Where estado = 1 and contratoId = ${id} `,
     );
   }
 
