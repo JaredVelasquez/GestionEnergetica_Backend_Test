@@ -16,9 +16,9 @@ export class Factura extends Entity {
     type: 'number',
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'contratoMedidorId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
+    mssql: {columnName: 'contratoId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  contratoMedidorId?: number;
+  contratoId?: number;
 
   @property({
     type: 'string',

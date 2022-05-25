@@ -25,64 +25,33 @@ export class InvoicesService {
   ) { }
 
   async CreateInvoice(invoice: InvoicesInterface) {
-    let cargoAsigned;
-    let energiaConsumidaAjustada = invoice.energiaConsumida;
 
     if (!invoice)
-      return 'Objeto invoice vacio';
+      return {error: 'Objeto invoice vacio'};
 
     let newInvoice = {
-      contratoMedidorId: invoice.contratoMedidorId,
+      contratoId: invoice.contratoId,
       codigo: invoice.codigo,
       fechaLectura: invoice.fechaLectura,
       fechaVencimiento: invoice.fechaVencimiento,
+      fechaEmision: invoice.fechaEmision,
       fechaInicio: invoice.fechaInicio,
       fechaFin: invoice.fechaFin,
-      tipoConsumo: invoice.tipoConsumo,
-      observacion: invoice.observacion,
       estado: invoice.estado,
 
     }
-    cargoAsigned = await this.cargosFacturaRepository.findById(invoice.cargoId);
-
-    if (!cargoAsigned)
-      return "No hay cargo asignable";
-
-    let ContratoMedidor = await this.contratosMedidoresRepository.findById(invoice.contratoMedidorId);
-
-    if (!ContratoMedidor)
-      return 'No hay un contrato de medidor relacionado';
-
-    let tarifaRelation = await this.tarifaParametroDetalleRepository.findById(ContratoMedidor.tarifaId);
-
-    let tarifa = await this.parametroTarifaRepository.findOne({where: {Id: tarifaRelation.parametroId}});
-
-    if (!tarifa)
-      return 'error';
-
     let InvoiceCreated = await this.facturaRepository.create(newInvoice);
+    await this.facturaRepository.updateById(InvoiceCreated.id, {codigo: InvoiceCreated.codigo + String(InvoiceCreated.id)});
 
-    if (!InvoiceCreated)
-      return "Error: No fue posible crear la factura";
-
-    let ListOfVirtualMeters = await this.medidorVirtualRepository.find({where: {medidorId: ContratoMedidor.medidorId}});
-
-
-    if (ListOfVirtualMeters) {
-      for (let i = 0; i < ListOfVirtualMeters.length; i++) {
-        if (ListOfVirtualMeters[i].operacion === true && ListOfVirtualMeters[i].estado === true) {
-          energiaConsumidaAjustada = energiaConsumidaAjustada + (invoice.energiaConsumida * ListOfVirtualMeters[i].porcentaje);
-        } else if (ListOfVirtualMeters[i].operacion === false && ListOfVirtualMeters[i].estado === true) {
-          energiaConsumidaAjustada = energiaConsumidaAjustada - (invoice.energiaConsumida * ListOfVirtualMeters[i].porcentaje);
-
-        }
-      }
+    if (!InvoiceCreated) {
+      return {error: "No fue posible emitir la factura"};
     }
+
     let newDetailInoice = {
       facturaId: InvoiceCreated.id,
-      cargoFacturaId: invoice.cargoId,
       energiaConsumida: invoice.energiaConsumida,
-      total: (energiaConsumidaAjustada * tarifa?.valor) - cargoAsigned.totalCargos
+      total: invoice.total,
+      estado: 2
     }
 
     let invoiceDatailCreated = await this.detalleFacturaRepository.create(newDetailInoice);

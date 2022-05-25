@@ -1,14 +1,12 @@
 export interface InvoicesInterface {
-  contratoMedidorId: number,
+  contratoId: number,
   codigo: string,
   fechaLectura: string,
   fechaVencimiento: string,
   fechaInicio: string,
   fechaFin: string,
-  tipoConsumo: number,
+  fechaEmision: string,
   energiaConsumida: number,
-  observacion: string,
-  estado: number,
-  cargoId: number,
-  parametroTarifaId: number,
+  total: number,
+  estado: number
 }

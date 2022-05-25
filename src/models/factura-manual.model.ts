@@ -70,7 +70,7 @@ export class FacturaManual extends Entity {
     type: 'number',
     required: false,
     precision: 53,
-    mssql: {columnName: 'valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+    mssql: {columnName: 'cargoReactivo', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   cargoReactivo?: number;
 
