@@ -60,6 +60,12 @@ export class Factura extends Entity {
 
   @property({
     type: 'date',
+    mssql: {columnName: 'fechaCancelacion', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  fechaCancelacion?: string;
+
+  @property({
+    type: 'date',
     mssql: {columnName: 'fechaFin', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
   fechaFin?: string;
