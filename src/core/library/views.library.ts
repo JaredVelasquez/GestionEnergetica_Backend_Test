@@ -22,6 +22,7 @@ export namespace viewOf {
   export const GET_ALL_IONDATA = `SELECT *, dateadd(hour,-6,TimestampUTC) Fecha FROM dbo.GetAllIONDATA`;
   export const GET_MANUAL_REGISTERS_FOR_DATE = `SELECT * FROM dbo.GetRegistrosManualesPorMedidor`;
   export const GET_EEHINVOICE_CHARGUES = ` SELECT * FROM dbo.GetCargosXFactura `;
+  export const GET_ACTIVE_SOURCE = ` SELECT * FROM dbo.GetSource `;
 
 
 }

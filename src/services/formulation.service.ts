@@ -47,7 +47,7 @@ export interface ION_Data {
   quantityName: string,
   dataLog2ID: string,
   Value: number,
-  Fecha: string
+  Fecha: string,
 }
 
 export interface ContractMeter {
@@ -156,14 +156,17 @@ export class FormulationService {
 
   async generateInvoices(generateInvoice: GenerateInvoice) {
     let lecturasEnergiaActiva: ION_Data[] = [], lecturasEnergiaReactiva: ION_Data[] = [], historicoMedidorConsumo: Array<MedidorSelect> = [];
-    let consumoEEH = ['FC.FC_MM_005', 'FC.FC_MM_006', 'FC.FC_MM_007', 'FC.FC_MM_008', 'FC.FC_MM_009', 'FC.FC_MM_010', 'FC.FC_MM_011', 'FC.FC_MM_012', 'FC.FC_MM_013', 'FC.FC_MM_014'];
-    let consumoSolar = ['FC.FC_MM_001', 'FC.FC_MM_002', 'FC.FC_MM_003', 'FC.FC_MM_004'];
+    let EnergiaReactiva = 91, EnergiaActiva = 129, EnergiaActivaExportada = 1001;
+    let medidorEEH = 0, medidorGeneracionSolar = 1;
     let tarifaSolar = 0, tarifaEnergiaExterna = 13;
     let MedidorFronteraSourceID = 0;
-    let EnergiaReactiva = 91, EnergiaActiva = 129, EnergiaActivaExportada = 1001;
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
     let PBE = 0;
     let PI = 0, ETCU = 0, ETO = 0;
+
+
+    let consumoEEH: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorEEH, 1);
+    let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
 
@@ -221,6 +224,12 @@ export class FormulationService {
       `${viewOf.GET_EHH_INVOICE} where fechaInicial = '${generateInvoice.fechaInicial}' and fechaFinal = '${generateInvoice.fechaFinal}'`,
     );
 
+  }
+
+  async ObtenerMedidoresActivos(tipo: number, estado: number) {
+    return await this.facturaManualRepository.dataSource.execute(
+      `${viewOf.GET_ACTIVE_SOURCE}  where funcionalidad = ${tipo} and estado = ${estado} ORDER BY Name ASC`,
+    );
   }
 
   async getSource() {
@@ -768,13 +777,13 @@ export class FormulationService {
     return LecturasResultantes;
   }
 
-  async SumaEnergiaDeMedidores(listaMedidores: string[], LecturasPorMedidor: MedidorSelect[]) {
+  async SumaEnergiaDeMedidores(listaMedidores: ION_Data_Source[], LecturasPorMedidor: MedidorSelect[]) {
     let TotalEnergia = 0;
 
     if (LecturasPorMedidor.length > 0)
       for (let i = 0; i < listaMedidores.length; i++) {
         for (let j = 0; j < LecturasPorMedidor.length; j++) {
-          if (listaMedidores[i] === LecturasPorMedidor[j].sourceName) {
+          if (listaMedidores[i].Name === LecturasPorMedidor[j].sourceName) {
             TotalEnergia += LecturasPorMedidor[j].totalLecturaActiva;
           }
         }
