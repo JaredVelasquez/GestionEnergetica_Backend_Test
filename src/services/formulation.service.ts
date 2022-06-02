@@ -73,6 +73,8 @@ export interface ContractMeter {
   zonaId: number,
   diaGeneracion: number,
   diasDisponibles: number,
+  Direccion: string,
+  Telefono: string
 }
 
 export interface CargosFacturaEEH {
@@ -92,6 +94,8 @@ export interface LecturasPorContrato {
     cliente: string,
     diasDisponibles: number,
     diaGeneracion: number,
+    direccion: string,
+    telefono: string
   },
   cargo?:
   [
@@ -725,7 +729,7 @@ export class FormulationService {
                   PCFR: 0,
                   historico: {
                     fechaActual: lecturasMedidores[i].fechaActual,
-                    fechaAnterior: lecturasMedidores[i].fechaActual,
+                    fechaAnterior: lecturasMedidores[i].fechaAnterior,
                     lecturaActivaActual: lecturasMedidores[i].lecturaActivaActual,
                     lecturaActivaAnterior: lecturasMedidores[i].lecturaActivaAnterior,
                     lecturaReactivaActual: lecturasMedidores[i].lecturaReactivaActual,
@@ -751,6 +755,8 @@ export class FormulationService {
                 cliente: listadoContratosMedidor[j].nombreActor,
                 diasDisponibles: listadoContratosMedidor[j].diasDisponibles,
                 diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
+                direccion: listadoContratosMedidor[j].Direccion,
+                telefono: listadoContratosMedidor[j].Telefono
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,
