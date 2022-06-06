@@ -906,7 +906,7 @@ export class FormulationService {
         //console.log(listadoContratosMedidor[i].medidor[j].FP);
 
       }
-
+      listadoContratosMedidor[i].FPTotal /= listadoContratosMedidor[i].medidor.length;
     }
     return listadoContratosMedidor;
   }
@@ -933,7 +933,7 @@ export class FormulationService {
 
         }
         else
-          listadoContratosMedidor[i].medidor[j].PCFR = 0;
+          listadoContratosMedidor[i].medidor[j].PCFR = listadoContratosMedidor[i].medidor[j].PCFR;
 
 
         listadoContratosMedidor[i].PCFRTotal += listadoContratosMedidor[i].medidor[j].PCFR;
