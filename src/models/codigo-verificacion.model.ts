@@ -20,20 +20,20 @@ export class CodigoVerificacion extends Entity {
     scale: 0,
     mssql: {columnName: 'UserId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  userId?: number;
+  userId: number;
 
   @property({
     type: 'string',
     length: 50,
     mssql: {columnName: 'Codigo', dataType: 'nvarchar', dataLength: 50, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  codigo?: string;
+  codigo: string;
 
   @property({
     type: 'date',
     mssql: {columnName: 'Exp', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  exp?: string;
+  exp: string;
 
   // Define well-known properties here
 

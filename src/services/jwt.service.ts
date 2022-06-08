@@ -1,10 +1,9 @@
 import {BindingScope, injectable, service} from '@loopback/core/dist';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
-import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {keys} from "../env/interfaces/Servicekeys.interface";
-import {CodigoVerificacion, Credenciales} from '../models';
+import {Credenciales} from '../models';
 import {CodigoVerificacionRepository, CredencialesRepository, UsuarioRepository} from '../repositories';
 import {EncriptDecryptService} from './encript-decrypt.service';
 import {UserService} from "./user.service";
@@ -77,35 +76,37 @@ export class JWTService {
     if (!user)
       user = await this.credencialesRepository.findOne({where: {username: identificator}});
 
+    console.log(user);
+
     if (user?.correo === identificator || user?.username === identificator) {
       newpassword = this.encriptDecryptService.Encrypt(newpassword);
-      user.passwordHash = newpassword;
+      user.hash = newpassword;
       this.credencialesRepository.replaceById(user.id, user);
       return newpassword;
     }
     return false;
   }
 
-  async generateCode(request: gCodeInterface) {
-    const newCode = new CodigoVerificacion;
-    console.log(request.identificator);
+  // async generateCode(request: gCodeInterface) {
+  //   const newCode = new CodigoVerificacion;
+  //   console.log(request.identificator);
 
-    let credentialsExist = await this.credencialesRepository.findOne({where: {correo: request.identificator}});
+  //   let credentialsExist = await this.credencialesRepository.findOne({where: {correo: request.identificator}});
 
-    if (!credentialsExist)
-      throw new HttpErrors[402]("Usuario no valido")
+  //   if (!credentialsExist)
+  //     throw new HttpErrors[402]("Usuario no valido")
 
-    newCode.exp = Date.now() + keys.ONE_MINUTE_MILLISECONDS + '';
-    newCode.codigo = keys.GENERATE_NEW_VERIFY_CODE;
-    let user = await this.usuarioRepository.findOne({where: {correo: request.identificator}});
-    if (!user?.estado)
-      throw new HttpErrors[402]("Este usuario esta desactivado");
+  //   newCode.exp = Date.now() + keys.ONE_MINUTE_MILLISECONDS + '';
+  //   newCode.codigo = keys.GENERATE_NEW_VERIFY_CODE;
+  //   let user = await this.usuarioRepository.findOne({where: {correo: request.identificator}});
+  //   if (!user?.estado)
+  //     throw new HttpErrors[402]("Este usuario esta desactivado");
 
-    newCode.userId = user.id;
+  //   newCode.userId = user.id;
 
-    return await this.codigoVerificacionRepository.create(newCode);
+  //   return await this.codigoVerificacionRepository.create(newCode);
 
-  }
+  // }
 
 }
 

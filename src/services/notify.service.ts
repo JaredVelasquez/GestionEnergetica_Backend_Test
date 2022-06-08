@@ -1,28 +1,40 @@
 import { /* inject, */ BindingScope, injectable} from '@loopback/core/dist';
-import {keys} from '../env/interfaces/Servicekeys.interface';
-const sgMail = require('@sendgrid/mail');
+var nodemailer = require('nodemailer');
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class NotifyService {
   constructor() { }
 
-  EmailNotification(email: string, codeVerification: any) {
-    sgMail.setApiKey(process.env.SENDGRID_TOKEN)
-    const msg = {
-      to: email,
-      from: keys.SENDER_EMAIL,
-      subject: 'Cambio de contraseña.',
-      text: `Hola buen dia. Has solicitado un codigo de para recuperacion de contraseña, si es asi, su codigo es: ${codeVerification} `,
+  async EmailNotification(email: string, subject: string, content: string) {
+    let isSend: boolean = false;
+    var transporter = nodemailer.createTransport({
+      service: 'outlook',
+      auth: {
+        user: 'jared.vealsquez@outlook.com',
+        pass: '123soleado'
+      }
+    });
 
-    }
-    sgMail
-      .send(msg)
-      .then(() => {
-        console.log("Correo enviado exitosamente.");
-      })
-      .catch((err: any) => {
-        console.error(err)
-      })
+    var mailOptions = {
+      from: 'jared.vealsquez@outlook.com',
+      to: `${email}`,
+      subject: `${subject}`,
+      text: `${content}`,
+    };
+
+    await transporter.sendMail(mailOptions, function (error: any, info: any) {
+      if (error) {
+        console.log(error);
+        isSend = false;
+      } else {
+        console.log('Email enviado: ' + info.response);
+        isSend = true;
+      }
+    });
+
+    return isSend;
+
+
   }
 
 }

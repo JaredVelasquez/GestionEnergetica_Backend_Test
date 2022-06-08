@@ -12,10 +12,9 @@ import {
   getModelSchemaRef, param, patch, post, put, requestBody,
   response
 } from '@loopback/rest';
-import {gCodeInterface} from '../core/interfaces/models/gCode.interface';
 import {LoginInterface} from '../core/interfaces/models/Login.interface';
 import {RegisterUserInterface} from '../core/interfaces/models/RegisterUser.interface';
-import {UsuarioRepository} from '../repositories';
+import {CredencialesRepository, UsuarioRepository} from '../repositories';
 import {AuthService, JWTService} from '../services';
 import {Usuario} from './../models/usuario.model';
 
@@ -23,6 +22,8 @@ export class AuthController {
   constructor(
     @repository(UsuarioRepository)
     private usuarioRepository: UsuarioRepository,
+    @repository(CredencialesRepository)
+    private credencialesRepository: CredencialesRepository,
     @service(JWTService)
     private jwtService: JWTService,
     @service(AuthService)
@@ -51,15 +52,21 @@ export class AuthController {
     return this.authService.Login(loginInterface);
   }
 
-  @post('/generate-verify-code')
+  @post('/reset-password')
   @response(200, {
     description: 'Usuario model instance',
   })
-  async GenerateVerifyCode(
-    @requestBody() gCode: gCodeInterface
+  async resetPassword(
+    @requestBody() reset: {user: number, newPassword: string}
   ): Promise<any> {
-    return await this.jwtService.generateCode(gCode);
+    let user = await this.credencialesRepository.findOne({where: {id: reset.user}});
+    if (!user?.correo) {
+      return {error: 'usuario no existe'}
+    }
+    return this.jwtService.ResetPassword(user?.correo, reset.newPassword);
   }
+
+
 
   @get('/usuarios/count')
   @response(200, {
