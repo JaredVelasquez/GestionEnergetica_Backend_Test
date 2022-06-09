@@ -77,11 +77,14 @@ export class JWTService {
       user = await this.credencialesRepository.findOne({where: {username: identificator}});
 
     console.log(user);
+    console.log(identificator);
 
     if (user?.correo === identificator || user?.username === identificator) {
       newpassword = this.encriptDecryptService.Encrypt(newpassword);
       user.hash = newpassword;
       this.credencialesRepository.replaceById(user.id, user);
+      console.log('se hizo');
+
       return newpassword;
     }
     return false;
