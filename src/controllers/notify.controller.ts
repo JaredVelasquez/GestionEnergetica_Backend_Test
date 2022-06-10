@@ -19,25 +19,33 @@ export class NotifyController {
 
   @post('/send-email')
   async ParamtersTable(
-    @requestBody() identi: {identificator: string},
+    @requestBody() identi: {identificator: string, subject: string, text: string, atachment?: any, option: number},
   ): Promise<any> {
-    let userExist = await this.credentialsRepository.findOne({where: {email: identi.identificator}});
-    if (!userExist?.correo) {
-      userExist = await this.credentialsRepository.findOne({where: {username: identi.identificator}});
+    let userExist
+    if (identi.option == 1) {
+      userExist = await this.credentialsRepository.findOne({where: {email: identi.identificator}});
+      if (!userExist?.correo) {
+        userExist = await this.credentialsRepository.findOne({where: {username: identi.identificator}});
+      }
+
+      if (!userExist?.correo) {
+        return {error: "El usuario no esta registrado"};
+
+      }
+      let verificationCode: string = shortid.generate();
+      let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
+
+      let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
+
+      await this.codigoVerificacionRepository.create(bodyCode);
+      await this.notify.EmailNotification(userExist.correo, `${identi.subject}`, `${identi.text} ${verificationCode}`, identi.atachment);
+
     }
 
-    if (!userExist?.correo) {
-      return {error: "El usuario no esta registrado"};
+    if (identi.option == 2) {
+      await this.notify.EmailNotification(identi.identificator, `${identi.subject}`, `${identi.text}`, identi.atachment);
 
     }
-
-    let verificationCode: string = shortid.generate();
-    let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
-
-    let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
-
-    await this.codigoVerificacionRepository.create(bodyCode);
-    let resultado = await this.notify.EmailNotification(userExist.correo, 'Codigo de verificación', `Su codigo de verificacion es : ${verificationCode}`);
     return true;
   }
 

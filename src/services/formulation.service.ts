@@ -74,7 +74,8 @@ export interface ContractMeter {
   diaGeneracion: number,
   diasDisponibles: number,
   Direccion: string,
-  Telefono: string
+  Telefono: string,
+  correo: string
 }
 
 export interface CargosFacturaEEH {
@@ -95,7 +96,8 @@ export interface LecturasPorContrato {
     diasDisponibles: number,
     diaGeneracion: number,
     direccion: string,
-    telefono: string
+    telefono: string,
+    correo: string
   },
   cargo?:
   [
@@ -756,7 +758,8 @@ export class FormulationService {
                 diasDisponibles: listadoContratosMedidor[j].diasDisponibles,
                 diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
                 direccion: listadoContratosMedidor[j].Direccion,
-                telefono: listadoContratosMedidor[j].Telefono
+                telefono: listadoContratosMedidor[j].Telefono,
+                correo: listadoContratosMedidor[j].correo
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,

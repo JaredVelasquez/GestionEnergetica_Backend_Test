@@ -5,7 +5,7 @@ var nodemailer = require('nodemailer');
 export class NotifyService {
   constructor() { }
 
-  async EmailNotification(email: string, subject: string, content: string) {
+  async EmailNotification(email: string, subject: string, content: string, atachment?: any) {
     let isSend: boolean = false;
     var transporter = nodemailer.createTransport({
       service: 'outlook',
@@ -20,6 +20,10 @@ export class NotifyService {
       to: `${email}`,
       subject: `${subject}`,
       text: `${content}`,
+      attachments: [
+        {
+          path: atachment
+        }]
     };
 
     await transporter.sendMail(mailOptions, function (error: any, info: any) {

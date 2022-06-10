@@ -35,6 +35,13 @@ export class Actores extends Entity {
 
   @property({
     type: 'string',
+    length: 200,
+    mssql: {columnName: 'Correo', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  correo?: string;
+
+  @property({
+    type: 'string',
     length: 250,
     mssql: {columnName: 'Telefono', dataType: 'varchar', dataLength: 250, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
