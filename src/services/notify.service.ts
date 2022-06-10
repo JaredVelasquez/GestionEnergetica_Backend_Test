@@ -7,6 +7,7 @@ export class NotifyService {
 
   async EmailNotification(email: string, subject: string, content: string, atachment?: any) {
     let isSend: boolean = false;
+    var mailOptions: any;
     var transporter = nodemailer.createTransport({
       service: 'outlook',
       auth: {
@@ -14,17 +15,28 @@ export class NotifyService {
         pass: '123soleado'
       }
     });
+    if (atachment) {
+      mailOptions = {
+        from: 'jared.vealsquez@outlook.com',
+        to: `${email}`,
+        subject: `${subject}`,
+        text: `${content}`,
+        attachments: [
+          {
+            __filename: 'Factura-consumo.pdf',
+            path: atachment
+          }]
+      };
 
-    var mailOptions = {
-      from: 'jared.vealsquez@outlook.com',
-      to: `${email}`,
-      subject: `${subject}`,
-      text: `${content}`,
-      attachments: [
-        {
-          path: atachment
-        }]
-    };
+    } else {
+      mailOptions = {
+        from: 'jared.vealsquez@outlook.com',
+        to: `${email}`,
+        subject: `${subject}`,
+        text: `${content}`,
+      };
+
+    }
 
     await transporter.sendMail(mailOptions, function (error: any, info: any) {
       if (error) {

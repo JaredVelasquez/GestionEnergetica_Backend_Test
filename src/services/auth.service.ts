@@ -66,6 +66,12 @@ export class AuthService {
     if (userExist)
       return error.INVALID_USERNAME;
 
+    if (!userExist)
+      userExist = await this.usuarioRepository.findOne({where: {telefono: registerUser.phoneNumber}});
+
+    if (userExist)
+      return error.INVALID_PHONENUMBER;
+
     modelUser.rolid = registerUser.rolId;
     modelUser.nombre = registerUser.firstName;
     modelUser.apellido = registerUser.lastName;

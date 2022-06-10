@@ -22,6 +22,8 @@ export class NotifyController {
     @requestBody() identi: {identificator: string, subject: string, text: string, atachment?: any, option: number},
   ): Promise<any> {
     let userExist
+    console.log(identi);
+
     if (identi.option == 1) {
       userExist = await this.credentialsRepository.findOne({where: {email: identi.identificator}});
       if (!userExist?.correo) {
@@ -32,18 +34,25 @@ export class NotifyController {
         return {error: "El usuario no esta registrado"};
 
       }
+      console.log(userExist);
+
       let verificationCode: string = shortid.generate();
       let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
 
       let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
+      console.log(bodyCode);
 
       await this.codigoVerificacionRepository.create(bodyCode);
-      await this.notify.EmailNotification(userExist.correo, `${identi.subject}`, `${identi.text} ${verificationCode}`, identi.atachment);
+      await this.notify.EmailNotification(userExist.correo, `${identi.subject}`, `${identi.text} ${verificationCode}`);
 
     }
 
     if (identi.option == 2) {
       await this.notify.EmailNotification(identi.identificator, `${identi.subject}`, `${identi.text}`, identi.atachment);
+
+    }
+    if (identi.option == 3) {
+      await this.notify.EmailNotification(identi.identificator, `${identi.subject}`, `${identi.text}`);
 
     }
     return true;
