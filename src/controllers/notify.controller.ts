@@ -40,7 +40,7 @@ export class NotifyController {
       let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
 
       let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
-      console.log(bodyCode);
+      console.log(userExist);
 
       await this.codigoVerificacionRepository.create(bodyCode);
       await this.notify.EmailNotification(userExist.correo, `${identi.subject}`, `${identi.text} ${verificationCode}`);

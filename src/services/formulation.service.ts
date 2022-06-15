@@ -287,13 +287,13 @@ export class FormulationService {
           else {
             // console.log('intentando conseguir promedio');
 
-            let lecturasAPromediar = await this.ObtenerValoresAPromediar(generateInvoice, historicoLecturasPorMedidor[j], quantityID);
-            // console.log(lecturasAPromediar);
+            // let lecturasAPromediar = await this.ObtenerValoresAPromediar(generateInvoice, historicoLecturasPorMedidor[j], quantityID);
+            // // console.log(lecturasAPromediar);
 
-            if (lecturasAPromediar.datos) {
-              let lecturaGenerada = await this.GenerarLecturaPromediadaTemporal(lecturasAPromediar.datos.lecturaInicial, lecturasAPromediar.datos.lecturaFinal, lecturasAPromediar.datos.fecha, lecturasAPromediar.countNulls, historicoLecturasPorMedidor[i], lecturasAPromediar.datos.posisionBuscada);
-              historicoLecturasPorMedidor.push(lecturaGenerada);
-            }
+            // if (lecturasAPromediar.datos) {
+            //   let lecturaGenerada = await this.GenerarLecturaPromediadaTemporal(lecturasAPromediar.datos.lecturaInicial, lecturasAPromediar.datos.lecturaFinal, lecturasAPromediar.datos.fecha, lecturasAPromediar.countNulls, historicoLecturasPorMedidor[i], lecturasAPromediar.datos.posisionBuscada);
+            //   historicoLecturasPorMedidor.push(lecturaGenerada);
+            // }
           }
 
 
@@ -458,7 +458,7 @@ export class FormulationService {
     );
 
     if (Tarifa) {
-      return Tarifa[0].valor;
+      return Tarifa[0] ? Tarifa[0].valor : 0;
     }
 
     return 0;
