@@ -131,6 +131,7 @@ export interface LecturasPorContrato {
   ],
   vmedidor?: [
     {
+      id: number,
       descripcion: string,
       LecturaActiva: number,
       LecturaReactiva: number,
@@ -509,14 +510,13 @@ export class FormulationService {
   }
 
   async aplyVirtualMeters(lecturasEnergiaActivaFinal: LecturasPorContrato[]) {
+    let vmetersRegistered: Array<number> = [];
     let resta = false, suma = true;
     for (let i = 0; i < lecturasEnergiaActivaFinal.length; i++) {
       for (let j = 0; j < lecturasEnergiaActivaFinal[i].medidor.length; j++) {
 
         let medidorIdentificado = await this.medidorRepository.findOne({where: {sourceId: lecturasEnergiaActivaFinal[i].medidor[j].sourceID}});
         let medidoresVirtualesRelacionados = await this.medidorVirtualDetalleRepository.find({where: {medidorId: medidorIdentificado?.id}});
-        //console.log(medidoresVirtualesRelacionados);
-
 
         if (medidoresVirtualesRelacionados.length > 0) {
           for (let m = 0; m < medidoresVirtualesRelacionados.length; m++) {
@@ -524,9 +524,10 @@ export class FormulationService {
 
             if (medidoresVirutalesIdentificados) {
 
-              if (medidoresVirutalesIdentificados.operacion === resta && medidoresVirtualesRelacionados[m].estado) {
+              if (medidoresVirutalesIdentificados.operacion === resta && medidoresVirtualesRelacionados[m].estado && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || 0)) {
                 if (!lecturasEnergiaActivaFinal[i].vmedidor) {
                   lecturasEnergiaActivaFinal[i].vmedidor = [{
+                    id: medidoresVirtualesRelacionados[m].id || 0,
                     descripcion: medidoresVirutalesIdentificados.observacion || '',
                     LecturaActiva: - lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                     LecturaReactiva: - lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,
@@ -536,12 +537,20 @@ export class FormulationService {
 
                 } else {
                   lecturasEnergiaActivaFinal[i].vmedidor?.push({
+                    id: medidoresVirtualesRelacionados[m].id || 0,
                     descripcion: medidoresVirutalesIdentificados.observacion || '',
                     LecturaActiva: - lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                     LecturaReactiva: - lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,
                     porcentaje: medidoresVirutalesIdentificados.porcentaje * 100
                   });
 
+                }
+                if (!vmetersRegistered) {
+
+                  vmetersRegistered = [medidoresVirtualesRelacionados[m].id || 0];
+                } else {
+
+                  vmetersRegistered.push(medidoresVirtualesRelacionados[m].id || 0);
                 }
 
                 lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
@@ -558,11 +567,13 @@ export class FormulationService {
               if (medidoresVirutalesIdentificados.operacion === suma && medidoresVirtualesRelacionados[m].estado === true && medidoresVirtualesRelacionados[m].sourceId) {
 
                 for (let h = 0; h < lecturasEnergiaActivaFinal.length; h++) {
+
                   for (let l = 0; l < lecturasEnergiaActivaFinal[h].medidor.length; l++) {
-                    if (lecturasEnergiaActivaFinal[h].medidor[l].sourceID === medidoresVirtualesRelacionados[m].sourceId) {
+                    if (lecturasEnergiaActivaFinal[h].medidor[l].sourceID === medidoresVirtualesRelacionados[m].sourceId && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || 0)) {
 
                       if (!lecturasEnergiaActivaFinal[h].vmedidor) {
                         lecturasEnergiaActivaFinal[h].vmedidor = [{
+                          id: medidoresVirtualesRelacionados[m].id || 0,
                           descripcion: medidoresVirutalesIdentificados.observacion || '',
                           LecturaActiva: - lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                           LecturaReactiva: - lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,
@@ -572,16 +583,25 @@ export class FormulationService {
 
                       } else {
                         lecturasEnergiaActivaFinal[h].vmedidor?.push({
+                          id: medidoresVirtualesRelacionados[m].id || 0,
                           descripcion: medidoresVirutalesIdentificados.observacion || '',
                           LecturaActiva: - lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                           LecturaReactiva: - lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,
                           porcentaje: medidoresVirutalesIdentificados.porcentaje * 100
                         });
                       }
+                      if (!vmetersRegistered) {
+
+                        vmetersRegistered = [medidoresVirtualesRelacionados[m].id || 0];
+                      } else {
+
+                        vmetersRegistered.push(medidoresVirtualesRelacionados[m].id || 0);
+                      }
 
 
                       if (!lecturasEnergiaActivaFinal[i].vmedidor) {
                         lecturasEnergiaActivaFinal[i].vmedidor = [{
+                          id: medidoresVirtualesRelacionados[m].id || 0,
                           descripcion: medidoresVirutalesIdentificados.observacion || '',
                           LecturaActiva: lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                           LecturaReactiva: lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,
@@ -591,6 +611,7 @@ export class FormulationService {
 
                       } else {
                         lecturasEnergiaActivaFinal[i].vmedidor?.push({
+                          id: medidoresVirtualesRelacionados[m].id || 0,
                           descripcion: medidoresVirutalesIdentificados.observacion || '',
                           LecturaActiva: lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje,
                           LecturaReactiva: lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje,

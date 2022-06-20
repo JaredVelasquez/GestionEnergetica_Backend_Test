@@ -24,6 +24,7 @@ export class MeterService {
 
     let relation = {
       medidorId: vmeter.medidorId,
+      sourceId: vmeter.sourceId,
       vmedidorId: newVirtualMeter.id,
       estado: true
     }
@@ -37,6 +38,7 @@ export class MeterService {
       id: newRelationMeter.id,
       medidorId: vmeter.medidorId,
       vmedidorId: newVirtualMeter.id,
+      sourceId: newRelationMeter.sourceId,
       operacion: vmeter.operacion,
       porcentaje: vmeter.porcentaje,
       observacion: vmeter.observacion,

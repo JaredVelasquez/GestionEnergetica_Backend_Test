@@ -18,6 +18,7 @@ export interface meterSchema {
 export interface meterRelationSchema {
   id?: number;
   medidorId: number;
+  sourceId: number;
   porcentaje: number;
   operacion: boolean;
   observacion: string;

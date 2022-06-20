@@ -39,7 +39,7 @@ export class MedidorVirtualDetalle extends Entity {
     scale: 0,
     mssql: {columnName: 'sourceId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  sourceId?: number;
+  sourceId: number;
 
   @property({
     type: 'boolean',
