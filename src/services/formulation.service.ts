@@ -179,7 +179,7 @@ export class FormulationService {
     let fechaInicial = (new Date(generateInvoice.fechaInicial).getMinutes()) % 15;
     let fechaFinal = (new Date(generateInvoice.fechaFinal).getMinutes()) % 15;
 
-    if (fechaInicial != 0 && fechaFinal) {
+    if (fechaInicial != 0 || fechaFinal != 0) {
       return {error: "El rango de facturacion debe respetar intervalos de 15 minutos exactos"};
     }
 
