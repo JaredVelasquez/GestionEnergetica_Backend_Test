@@ -172,39 +172,39 @@ export class FormulationService {
     let PBE = 0;
     let PI = 0, ETCU = 0, ETO = 0;
 
-
     let consumoEEH: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorEEH, 1);
     let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
+    let fechaInicial = (new Date(generateInvoice.fechaInicial).getMinutes()) % 15;
+    let fechaFinal = (new Date(generateInvoice.fechaFinal).getMinutes()) % 15;
+
+    if (fechaInicial != 0 && fechaFinal) {
+      return {error: "El rango de facturacion debe respetar intervalos de 15 minutos exactos"};
+    }
 
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
-
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva, medidores);
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva, medidores);
-
     let contratosVigentes = await this.metersOnContract(hoy);
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, medidores)
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes);
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
-    //console.log(lecturasMedidoresPorContrato[0].vmedidor);
     ESG = await this.SumaEnergiaDeMedidores(consumoSolar, historicoMedidorConsumo);
     let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva, MedidorFronteraSourceID);
     ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActiva, lecturasManuales);
+
+    if (!ECR) {
+      return {error: "No existen lecturas de medidor de frontera para este periodo"};
+    }
+
     ETCU = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
     lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada, MedidorFronteraSourceID);
     EXR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales);
-    //console.log('EXR: ' + EXR);
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
     ETO = EAC + ECR;
-    // console.log('PBE: ' + PBE);
-    // console.log('FS: ' + FS);
-    // console.log('ESG: ' + ESG);
-    // console.log('EXR: ' + EXR);
-    // console.log('ECR: ' + ECR);
-
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS);
@@ -213,6 +213,9 @@ export class FormulationService {
     if (facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
       let listadoCargos = await this.ObetenerCargosPorFactura(facturaEEHVigente[0].id);
       lecturasMedidoresPorContrato = await this.DistribucionCargosPorCliente(listadoCargos, lecturasMedidoresPorContrato, facturaEEHVigente[0].cargoReactivo);
+    }
+    if (!facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
+      return {error: "No existe una factura de proveedor externo para este periodo"};
     }
     PI = 1 - (ETCU / ETO);
 
@@ -230,8 +233,9 @@ export class FormulationService {
   }
 
   async getFacturaEHH(generateInvoice: GenerateInvoice) {
+
     return await this.facturaManualRepository.dataSource.execute(
-      `${viewOf.GET_EHH_INVOICE} where fechaInicial = '${generateInvoice.fechaInicial}' and fechaFinal = '${generateInvoice.fechaFinal}'`,
+      `${viewOf.GET_EHH_INVOICE} where fechaInicial = '${generateInvoice.fechaInicial}' and fechaFinal = '${generateInvoice.fechaFinal}'and estado = 1`,
     );
 
   }
@@ -252,7 +256,7 @@ export class FormulationService {
 
   async getIONDATA(generateInvoice: GenerateInvoice, quantityID: number) {
     return await this.facturaManualRepository.dataSource.execute(
-      `${viewOf.GET_IONDATA} where (TimestampUTC = dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} and sourceID != 27 ORDER BY sourceName ASC`,
+      `${viewOf.GET_IONDATA} where (TimestampUTC = dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} ORDER BY sourceName ASC`,
     );
   }
 
@@ -261,7 +265,7 @@ export class FormulationService {
 
     for (let i = 0; i < ListaMedidores.length; i++) {
       let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
-        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} and sourceID != 27  and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`,
+        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`,
       );
 
       // console.log('---------------------------------------------------------------------------');
@@ -373,7 +377,7 @@ export class FormulationService {
 
   async ObtenerValoresAPromediar(generateInvoice: GenerateInvoice, historicoLecturas: ION_Data, quantityID: number) {
     let lecturasParaPromediar: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
-      `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN  dateadd(hour, - 168,'${generateInvoice.fechaInicial}') and dateadd(hour, 168,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} and sourceID != 27 and sourceID = ${historicoLecturas.sourceID} ORDER BY sourceName ASC`,
+      `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN  dateadd(hour, - 168,'${generateInvoice.fechaInicial}') and dateadd(hour, 168,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID} and sourceID = ${historicoLecturas.sourceID} ORDER BY sourceName ASC`,
     );
 
     let datos;
