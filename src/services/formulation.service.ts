@@ -171,11 +171,6 @@ export class FormulationService {
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
     let PBE = 0;
     let PI = 0, ETCU = 0, ETO = 0;
-
-    let consumoEEH: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorEEH, 1);
-    let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
-    let hoy = new Date().toISOString();
-    let medidores = await this.getSource();
     let fechaInicial = (new Date(generateInvoice.fechaInicial).getMinutes()) % 15;
     let fechaFinal = (new Date(generateInvoice.fechaFinal).getMinutes()) % 15;
 
@@ -183,6 +178,11 @@ export class FormulationService {
       return {error: "El rango de facturacion debe respetar intervalos de 15 minutos exactos"};
     }
 
+
+    let consumoEEH: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorEEH, 1);
+    let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
+    let hoy = new Date().toISOString();
+    let medidores = await this.getSource();
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva, medidores);
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva, medidores);
@@ -194,13 +194,15 @@ export class FormulationService {
     let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva, MedidorFronteraSourceID);
     ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActiva, lecturasManuales);
 
-    if (!ECR) {
+    if (!ECR && generateInvoice.facturaEEH === true) {
       return {error: "No existen lecturas de medidor de frontera para este periodo"};
     }
 
     ETCU = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
     lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada, MedidorFronteraSourceID);
     EXR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales);
+    console.log(EXR);
+
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
