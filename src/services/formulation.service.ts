@@ -86,6 +86,7 @@ export interface CargosFacturaEEH {
 }
 
 export interface LecturasPorContrato {
+
   contrato: {
     contratoId: number,
     contratoMedId: number,
@@ -143,10 +144,10 @@ export interface LecturasPorContrato {
   CEFTotal: number,
   PCFTotal: number,
   PCFRTotal: number,
-  FPTotal: number
-
-
+  FPTotal: number,
+  PPS: number,
 }
+
 @injectable({scope: BindingScope.TRANSIENT})
 export class FormulationService {
   constructor(
@@ -167,8 +168,9 @@ export class FormulationService {
     let EnergiaReactiva = 91, EnergiaActiva = 129, EnergiaActivaExportada = 1001;
     let medidorEEH = 0, medidorGeneracionSolar = 1;
     let tarifaSolar = 0, tarifaEnergiaExterna = 13;
+    let cliente = 3, proveedorExterno = 1, proveedorInterno = 8;
     let MedidorFronteraSourceID = 0;
-    let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0;
+    let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0, ETCR = 0;
     let PBE = 0;
     let PI = 0, ETCU = 0, ETO = 0;
     let fechaInicial = (new Date(generateInvoice.fechaInicial).getMinutes()) % 15;
@@ -183,34 +185,43 @@ export class FormulationService {
     let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
+
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva, medidores);
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva, medidores);
-    let contratosVigentes = await this.metersOnContract(hoy);
+    let contratosVigentes = await this.metersOnContract(hoy, cliente);
+    let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
+    let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
+    //console.log(contratosProveedorInterno);
+
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, medidores)
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes);
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
-    ESG = await this.SumaEnergiaDeMedidores(consumoSolar, historicoMedidorConsumo);
     let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva, MedidorFronteraSourceID);
-    ECR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActiva, lecturasManuales);
+    ECR = await this.LecturasMedidorFrontera(historicoMedidorConsumo, EnergiaActiva, lecturasManuales, contratosProveedorExterno);
+    lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada, MedidorFronteraSourceID);
+    EXR = await this.LecturasMedidorFrontera(historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales, contratosProveedorExterno);
+    ESG = await this.SumaEnergiaDeMedidores(contratosProveedorInterno, historicoMedidorConsumo);
+    ETCR = ECR + ESG;
 
     if (!ECR && generateInvoice.facturaEEH === true) {
       return {error: "No existen lecturas de medidor de frontera para este periodo"};
     }
 
-    ETCU = await this.SumaEnergiaDeMedidores(consumoEEH, historicoMedidorConsumo);
-    lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada, MedidorFronteraSourceID);
-    EXR = await this.LecturasMedidorFrontera(MedidorFronteraSourceID, historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales);
-    console.log(EXR);
-
-    EAC = ESG - EXR;
-    FS = EAC / (ECR + EAC);
+    ETCU = await this.SumaEnergiaDeMedidores(contratosProveedorExterno, historicoMedidorConsumo);
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
+    EAC = ESG - EXR;
+    console.log("EAC: " + EAC);
+    console.log("ECR: " + ECR);
+    console.log("EXR: " + EXR);
+
+    FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, FS, ECR);
+    lecturasMedidoresPorContrato = await this.PorcentajeParticipacionSolar(FS, lecturasMedidoresPorContrato);
 
     if (facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
       let listadoCargos = await this.ObetenerCargosPorFactura(facturaEEHVigente[0].id);
@@ -219,10 +230,22 @@ export class FormulationService {
     if (!facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
       return {error: "No existe una factura de proveedor externo para este periodo"};
     }
+
     PI = 1 - (ETCU / ETO);
 
     if (generateInvoice.contratoId) {
       return lecturasMedidoresPorContrato.find(element => element.contrato.contratoCodigo === generateInvoice.contratoId);
+    }
+
+    return lecturasMedidoresPorContrato;
+  }
+
+  async PorcentajeParticipacionSolar(ETCR: number, lecturasMedidoresPorContrato: LecturasPorContrato[]) {
+
+    for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
+      //lecturasMedidoresPorContrato[i].PPS = lecturasMedidoresPorContrato[i].totalLecturaActivaAjustada / ETCR;
+      lecturasMedidoresPorContrato[i].PPS = ETCR;
+      console.log("PPS: " + lecturasMedidoresPorContrato[i].PPS);
     }
 
     return lecturasMedidoresPorContrato;
@@ -709,9 +732,9 @@ export class FormulationService {
 
 
 
-  async metersOnContract(today: string) {
+  async metersOnContract(today: string, tipoContrato: number) {
     let contratosVigentes = this.medidorRepository.dataSource.execute(
-      `${viewOf.GET_CMETERS} where estado = 1 and fechaCreacion < '${today}' and fechaVenc > '${today}'  and tipoContratoId = 3`,
+      `${viewOf.GET_CMETERS} where estado = 1 and fechaCreacion < '${today}' and fechaVenc > '${today}'  and tipoContratoId = ${tipoContrato}`,
     );
 
     return contratosVigentes;
@@ -813,7 +836,8 @@ export class FormulationService {
               CEFTotal: 0,
               PCFTotal: 0,
               PCFRTotal: 0,
-              FPTotal: 0
+              FPTotal: 0,
+              PPS: 0
             });
 
           }
@@ -826,13 +850,13 @@ export class FormulationService {
     return LecturasResultantes;
   }
 
-  async SumaEnergiaDeMedidores(listaMedidores: ION_Data_Source[], LecturasPorMedidor: MedidorSelect[]) {
+  async SumaEnergiaDeMedidores(listaMedidores: ContractMeter[], LecturasPorMedidor: MedidorSelect[]) {
     let TotalEnergia = 0;
 
     if (LecturasPorMedidor.length > 0)
       for (let i = 0; i < listaMedidores.length; i++) {
         for (let j = 0; j < LecturasPorMedidor.length; j++) {
-          if (listaMedidores[i].Name === LecturasPorMedidor[j].sourceName) {
+          if (listaMedidores[i].sourceId === LecturasPorMedidor[j].sourceId) {
             TotalEnergia += LecturasPorMedidor[j].totalLecturaActiva;
           }
         }
@@ -841,11 +865,14 @@ export class FormulationService {
     return TotalEnergia;
   }
 
-  async LecturasMedidorFrontera(MedidorFronteraSourceID: number, LecturasPorMedidor: MedidorSelect[], quantityID: number, lecturasManuales: any[]) {
+  async LecturasMedidorFrontera(LecturasPorMedidor: MedidorSelect[], quantityID: number, lecturasManuales: any[], cotratosProveedorExterno: ContractMeter[]) {
     let LecturasFrontera = 0;
     for (let i = 0; i < LecturasPorMedidor.length; i++) {
-      if (LecturasPorMedidor[i].sourceId === MedidorFronteraSourceID && LecturasPorMedidor[i].quantityID === quantityID) {
-        LecturasFrontera += LecturasPorMedidor[i].totalLecturaActiva;
+      for (let j = 0; j < cotratosProveedorExterno.length; j++) {
+        if (LecturasPorMedidor[i].sourceId === cotratosProveedorExterno[j].sourceId && LecturasPorMedidor[i].quantityID === quantityID) {
+          LecturasFrontera += LecturasPorMedidor[i].totalLecturaActiva;
+        }
+
       }
     }
     if (LecturasFrontera == 0) {

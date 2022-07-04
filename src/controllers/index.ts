@@ -24,3 +24,4 @@ export * from './tipo-cargo-factura-manual.controller';
 export * from './manual-invoice-detail.controller';
 export * from './formulation.controller';
 export * from './notify.controller';
+export * from './contract-type.controller';

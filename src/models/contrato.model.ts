@@ -31,14 +31,6 @@ export class Contrato extends Entity {
 
   @property({
     type: 'string',
-    required: true,
-    length: 1,
-    mssql: {columnName: 'Clasificacion', dataType: 'char', dataLength: 1, dataPrecision: null, dataScale: null, nullable: 'NO'},
-  })
-  clasificacion: string;
-
-  @property({
-    type: 'string',
     length: -1,
     mssql: {columnName: 'Descripcion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
