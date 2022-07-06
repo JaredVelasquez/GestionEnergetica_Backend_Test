@@ -168,7 +168,7 @@ export class FormulationService {
     let EnergiaReactiva = 91, EnergiaActiva = 129, EnergiaActivaExportada = 1001;
     let medidorEEH = 0, medidorGeneracionSolar = 1;
     let tarifaSolar = 0, tarifaEnergiaExterna = 13;
-    let cliente = 3, proveedorExterno = 1, proveedorInterno = 8;
+    let cliente = 3, proveedorExterno = 1, proveedorInterno = 4;
     let MedidorFronteraSourceID = 0;
     let FS = 0, EAC = 0, ESG = 0, EXR = 0, ECR = 0, ETCR = 0;
     let PBE = 0;
@@ -192,7 +192,7 @@ export class FormulationService {
     let contratosVigentes = await this.metersOnContract(hoy, cliente);
     let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
-    //console.log(contratosProveedorInterno);
+    //console.log(lecturasEnergiaActiva);
 
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, medidores)
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes);
@@ -289,66 +289,88 @@ export class FormulationService {
     let historicoLecturas: Array<ION_Data> = [];
 
     for (let i = 0; i < ListaMedidores.length; i++) {
+      console.log(generateInvoice);
+
       let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
         `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`,
       );
 
-      // console.log('---------------------------------------------------------------------------');
-
-      // console.log('historico encontrado: ' + historicoLecturasPorMedidor.length);
-      // console.log(historicoLecturasPorMedidor);
-
-
-      // console.log('---------------------------------------------------------------------------');
-
-
       for (let j = 0; j < historicoLecturasPorMedidor.length; j++) {
-        if (historicoLecturasPorMedidor.length == 1) {
-          //console.log('intentando manuales');
-
-          let lecturaManualEncontrada = await this.ObtenerLecturaManualHistorica(historicoLecturasPorMedidor[j], generateInvoice, quantityID)
-
-          if (lecturaManualEncontrada) {
-            // console.log('manuales conseguidas');
-            historicoLecturasPorMedidor.push(lecturaManualEncontrada);
-
-          }
-
-          else {
-            // console.log('intentando conseguir promedio');
-
-            // let lecturasAPromediar = await this.ObtenerValoresAPromediar(generateInvoice, historicoLecturasPorMedidor[j], quantityID);
-            // // console.log(lecturasAPromediar);
-
-            // if (lecturasAPromediar.datos) {
-            //   let lecturaGenerada = await this.GenerarLecturaPromediadaTemporal(lecturasAPromediar.datos.lecturaInicial, lecturasAPromediar.datos.lecturaFinal, lecturasAPromediar.datos.fecha, lecturasAPromediar.countNulls, historicoLecturasPorMedidor[i], lecturasAPromediar.datos.posisionBuscada);
-            //   historicoLecturasPorMedidor.push(lecturaGenerada);
-            // }
-          }
-
-
-        }
-        ///////////////////////////////////////////
+        // if (historicoLecturasPorMedidor.length == 1) {
+        //   let lecturaManualEncontrada = await this.ObtenerLecturaManualHistorica(historicoLecturasPorMedidor[j], generateInvoice, quantityID)
+        //   if (lecturaManualEncontrada) {
+        //     historicoLecturasPorMedidor.push(lecturaManualEncontrada);
+        //   }
+        // }
 
         if (historicoLecturasPorMedidor.length > 1) {
+          if (!historicoLecturasPorMedidor[j].Value) {
+            let direccion = await this.identificarLecturaFaltante(new Date(historicoLecturasPorMedidor[j].TimestampUTC), generateInvoice);
+            let lecturaReemplazo: any = 0, cantidadCiclos: number = 1;
+            while (lecturaReemplazo == 0 && j < historicoLecturasPorMedidor.length) {
+              if (direccion < 0) {
+                lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaInicial, quantityID, ListaMedidores[i].ID, cantidadCiclos);
+
+              } else {
+                lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaFinal, quantityID, ListaMedidores[i].ID, cantidadCiclos);
+
+              }
+            }
+            if (lecturaReemplazo > 0) {
+              console.log(lecturaReemplazo);
+
+
+              historicoLecturasPorMedidor[j].Value = lecturaReemplazo;
+              lecturaReemplazo = 0;
+              cantidadCiclos = 0;
+            } else
+              cantidadCiclos++;
+
+          }
           historicoLecturas.push(historicoLecturasPorMedidor[j]);
         }
 
 
         if (historicoLecturasPorMedidor.length == 0) {
 
+
         }
 
 
       }
 
-      //console.log(historicoLecturas);
-      //console.log(posisionBuscada);
     }
     return historicoLecturas;
 
   }
 
+  async identificarLecturaFaltante(fecha: Date, generateInvoice: GenerateInvoice) {
+
+    if (fecha < new Date(generateInvoice.fechaFinal)) {
+      return -15;
+    }
+
+    return 15;
+  }
+
+  async GenerarlecturaTemporal(fecha: string, quantityID: number, medidor: number, cantidadCiclos: number) {
+
+    let lecturaTemporalInicial!: Array<ION_Data>, lecturaTemporalFinal!: Array<ION_Data>;
+
+    if (!lecturaTemporalFinal) {
+      lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${fecha}'))) and quantityID = ${quantityID}  and sourceID = ${medidor} ORDER BY sourceName ASC`);
+    }
+    if (!lecturaTemporalInicial) {
+      lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${fecha}'))) and quantityID = ${quantityID}  and sourceID = ${medidor} ORDER BY sourceName ASC`);
+    }
+    console.log(lecturaTemporalInicial);
+
+    if (lecturaTemporalInicial && lecturaTemporalFinal) {
+      return lecturaTemporalInicial[0].Value + (lecturaTemporalFinal[0].Value - lecturaTemporalInicial[0].Value);
+    }
+    return 0;
+
+  }
   async ObtenerLecturaManualHistorica(historicoLecturasPorMedidor: ION_Data, generateInvoice: GenerateInvoice, quantityID: number): Promise<ION_Data> {
     console.log(historicoLecturasPorMedidor.sourceID);
 
@@ -410,21 +432,12 @@ export class FormulationService {
     let QuinceMinutosMilesegundos = 900000;
     let posicionInicial: number = -1;
     let isInical: boolean = false;
-    //console.log('---------------------------------------------------------------------------');
-    //console.log(lecturasParaPromediar[0]);
-
-    //console.log(lecturasParaPromediar[lecturasParaPromediar.length - 1]);
-    //console.log(historicoLecturas);
 
     for (let k = 0; k < lecturasParaPromediar.length; k++) {
       if (lecturasParaPromediar[k].dataLog2ID === historicoLecturas.dataLog2ID) {
         posicionInicial = k;
       }
     }
-    // console.log('inicial: ' + posicionInicial);
-
-    // console.log('---------------------------------------------------------------------------');
-
     if (Date.parse(historicoLecturas.Fecha) > Date.parse(generateInvoice.fechaInicial)) {
       isInical = true;
     }
@@ -433,8 +446,6 @@ export class FormulationService {
 
 
       if (Date.parse(lecturasParaPromediar[j].Fecha) <= Date.parse(historicoLecturas.Fecha) && isInical) {
-        //console.log('estoy restando');
-        //console.log(j);
 
         if (Date.parse(lecturasParaPromediar[j - 1].Fecha) < Date.parse(generateInvoice.fechaInicial) && lecturasParaPromediar[j - 1].Value) {
           let posisionBuscada = 1;
@@ -693,7 +704,7 @@ export class FormulationService {
 
   async LecturasAjustadas(lecturasEnergiaActiva: ION_Data[], lecturasEnergiaReactiva: ION_Data[], medidores: any) {
     let i = 0;
-    let historicoMedidorConsumo: Array<MedidorSelect> = []
+    let historicoMedidorConsumo: Array<MedidorSelect> = [];
 
     for (let j = 0; j < lecturasEnergiaActiva.length; j += 2) {
       let auxActiva = lecturasEnergiaActiva[j + 1].Value;
@@ -742,7 +753,7 @@ export class FormulationService {
 
   async ObetenerLecturasManualesPorFecha(fechaInicial: string, fechaFinal: string, quantityID: number, sourceID: number) {
     let lecturasManuales = this.medidorRepository.dataSource.execute(
-      `${viewOf.GET_MANUAL_REGISTERS_FOR_DATE} where sourceId = ${sourceID} and (fecha = '${fechaInicial}' or fecha = '${fechaFinal}') and quantityId = ${quantityID}`,
+      `${viewOf.GET_MANUAL_REGISTERS_FOR_DATE} where sourceId = ${sourceID} and (fecha = '${fechaInicial}' or fecha = '${fechaFinal}') and quantityId = ${quantityID} ORDER BY valor ASC`,
     );
 
     return lecturasManuales;
@@ -877,6 +888,8 @@ export class FormulationService {
     }
     if (LecturasFrontera == 0) {
       if (lecturasManuales.length > 1) {
+        console.log(lecturasManuales);
+
         LecturasFrontera = (lecturasManuales[1].valor * lecturasManuales[0].multiplicador) - (lecturasManuales[0].valor * lecturasManuales[0].multiplicador);
       }
     }
