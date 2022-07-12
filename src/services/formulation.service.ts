@@ -156,6 +156,7 @@ export interface LecturasPorContrato {
   FPTotal: number,
   PPS: number,
   PBE: number,
+  ModoCalculoSolar: boolean,
 }
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -224,17 +225,16 @@ export class FormulationService {
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
-    console.log(EAC);
-    console.log(ECR);
-    console.log(ESG / (ECR + ESG));
-    console.log(ECR / (ECR + ESG));
+    // console.log(EAC);
+    // console.log(ECR);
+    // console.log(ESG / (ECR + ESG));
+    // console.log(ECR / (ECR + ESG));
 
-    console.log(FS);
+    // console.log(FS);
 
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
-    lecturasMedidoresPorContrato = await this.PorcentajeParticipacionSolar(EAC, lecturasMedidoresPorContrato);
-    lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS);
+    lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
 
     if (facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
@@ -254,12 +254,15 @@ export class FormulationService {
     return lecturasMedidoresPorContrato;
   }
 
-  async PorcentajeParticipacionSolar(ETCR: number, lecturasMedidoresPorContrato: LecturasPorContrato[]) {
+  async PorcentajeParticipacionSolar(ETCR: number, ESG: number, lecturasMedidoresPorContrato: LecturasPorContrato[], metodoDistribucionInterna: boolean) {
 
     for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
-      lecturasMedidoresPorContrato[i].PPS = lecturasMedidoresPorContrato[i].totalEnergiaFotovoltaicaActivaConsumida / ETCR;
-      //lecturasMedidoresPorContrato[i].PPS = ETCR;
-      // console.log("PPS: " + lecturasMedidoresPorContrato[i].PPS);
+      if (metodoDistribucionInterna) {
+        lecturasMedidoresPorContrato[i].PPS = lecturasMedidoresPorContrato[i].totalEnergiaFotovoltaicaActivaConsumida / ESG;
+      } else {
+
+        lecturasMedidoresPorContrato[i].PPS = lecturasMedidoresPorContrato[i].totalLecturaActivaAjustada / ETCR;
+      }
     }
 
     return lecturasMedidoresPorContrato;
@@ -942,7 +945,8 @@ export class FormulationService {
               PCFRTotal: 0,
               FPTotal: 0,
               PPS: 0,
-              PBE: 0
+              PBE: 0,
+              ModoCalculoSolar: false
             });
 
           }
@@ -1033,7 +1037,8 @@ export class FormulationService {
               PCFRTotal: 0,
               FPTotal: 0,
               PPS: 0,
-              PBE: 0
+              PBE: 0,
+              ModoCalculoSolar: false
             });
 
           }
@@ -1044,7 +1049,7 @@ export class FormulationService {
       }
     }
 
-    console.log(LecturasResultantes);
+    //console.log(LecturasResultantes);
     //  console.log(LecturasResultantes);
 
     return LecturasResultantes;
@@ -1052,7 +1057,7 @@ export class FormulationService {
 
   async SumaEnergiaDeMedidores(listaMedidores: ContractMeter[], LecturasPorMedidor: MedidorSelect[]) {
     let TotalEnergia = 0;
-    console.log(listaMedidores);
+    //console.log(listaMedidores);
 
 
     if (LecturasPorMedidor.length > 0)
@@ -1089,17 +1094,35 @@ export class FormulationService {
     return LecturasFrontera;
   }
 
-  async CargoPorEnergiaFotovoltaicaPorMedidor(LecturasPorMedidor: LecturasPorContrato[], PBE: number, ESG: number) {
+  async CargoPorEnergiaFotovoltaicaPorMedidor(LecturasPorMedidor: LecturasPorContrato[], PBE: number, FS: number, ESG: number, ETCR: number) {
+    let metodoDistribucionInterna: boolean = false;
     for (let i = 0; i < LecturasPorMedidor.length; i++) {
       for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
         if (LecturasPorMedidor[i].medidor[j].funcionalidad === true) {
           LecturasPorMedidor[i].medidor[j].CEF = PBE * LecturasPorMedidor[i].medidor[j].LecturaActiva;
           LecturasPorMedidor[i].CEFTotal += LecturasPorMedidor[i].medidor[j].CEF;
           LecturasPorMedidor[i].PBE = PBE;
+          metodoDistribucionInterna = true;
+          LecturasPorMedidor[i].ModoCalculoSolar = true;
+
         }
       }
     }
 
+    LecturasPorMedidor = await this.PorcentajeParticipacionSolar(ETCR, ESG, LecturasPorMedidor, metodoDistribucionInterna);
+
+    if (!metodoDistribucionInterna) {
+      for (let i = 0; i < LecturasPorMedidor.length; i++) {
+        for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
+          LecturasPorMedidor[i].medidor[j].CEF = PBE * (LecturasPorMedidor[i].PPS * ESG);
+          LecturasPorMedidor[i].CEFTotal += LecturasPorMedidor[i].medidor[j].CEF;
+          console.log(LecturasPorMedidor[i].CEFTotal);
+
+          LecturasPorMedidor[i].PBE = PBE;
+        }
+      }
+
+    }
     return LecturasPorMedidor;
 
   }
