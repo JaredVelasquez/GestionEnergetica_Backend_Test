@@ -33,6 +33,20 @@ export class DetalleFactura extends Entity {
   @property({
     type: 'number',
     precision: 53,
+    mssql: {columnName: 'consumoSolar', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  consumoSolar?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
+    mssql: {columnName: 'consumoExterno', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
+  })
+  consumoExterno?: number;
+
+  @property({
+    type: 'number',
+    precision: 53,
     mssql: {columnName: 'total', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'YES'},
   })
   total?: number;

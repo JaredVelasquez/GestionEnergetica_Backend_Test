@@ -7,6 +7,8 @@ export interface InvoicesInterface {
   fechaFin: string,
   fechaEmision: string,
   energiaConsumida: number,
+  consumoExterno: number,
+  consumoSolar: number,
   total: number,
   estado: number
 }

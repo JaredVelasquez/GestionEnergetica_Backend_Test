@@ -50,6 +50,8 @@ export class InvoicesService {
     let newDetailInoice = {
       facturaId: InvoiceCreated.id,
       energiaConsumida: invoice.energiaConsumida,
+      consumoSolar: invoice.consumoSolar,
+      consumoExterno: invoice.consumoExterno,
       total: invoice.total,
       estado: 2
     }
