@@ -224,12 +224,8 @@ export class FormulationService {
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
-    // console.log(EAC);
-    // console.log(ECR);
-    // console.log(ESG / (ECR + ESG));
-    // console.log(ECR / (ECR + ESG));
-
-    // console.log(FS);
+    // console.log("EAC" + EAC);
+    // console.log("ECR" + ECR);
 
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
@@ -1111,7 +1107,7 @@ export class FormulationService {
         for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
           LecturasPorMedidor[i].medidor[j].CEF = PBE * (LecturasPorMedidor[i].PPS * ESG);
           LecturasPorMedidor[i].CEFTotal += LecturasPorMedidor[i].medidor[j].CEF;
-          console.log(LecturasPorMedidor[i].CEFTotal);
+          //console.log(LecturasPorMedidor[i].CEFTotal);
 
           LecturasPorMedidor[i].PBE = PBE;
         }
