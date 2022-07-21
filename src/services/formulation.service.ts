@@ -191,19 +191,21 @@ export class FormulationService {
       return {error: "El rango de facturacion debe respetar intervalos de 15 minutos exactos"};
     }
 
-
-    let consumoEEH: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorEEH, 1);
-    let consumoSolar: ION_Data_Source[] = await this.ObtenerMedidoresActivos(medidorGeneracionSolar, 1);
     let hoy = new Date().toISOString();
     let medidores = await this.getSource();
+
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
 
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
+
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva, medidores);
+    console.log(lecturasEnergiaActiva);
+
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva, medidores);
     lecturasEnergiaActivaExportada = await this.getAllMetersIONDATA(generateInvoice, Exportada, medidores);
 
     let contratosVigentes = await this.metersOnContract(hoy, cliente);
+
     let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
@@ -224,13 +226,14 @@ export class FormulationService {
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
-    // console.log("EAC" + EAC);
-    // console.log("ECR" + ECR);
+    console.log("EAC" + EAC);
+    console.log("ECR" + ECR);
 
     lecturasMedidoresPorContrato = await this.FactorDePotencia(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
+    console.log(lecturasMedidoresPorContrato);
 
     if (facturaEEHVigente[0] && generateInvoice.facturaEEH === true) {
       let listadoCargos = await this.ObetenerCargosPorFactura(facturaEEHVigente[0].id);
@@ -319,23 +322,26 @@ export class FormulationService {
             let direccion = await this.identificarLecturaFaltante(new Date(historicoLecturasPorMedidor[j].TimestampUTC), generateInvoice);
             let lecturaReemplazo: any = 0, cantidadCiclos: number = 1;
             while (lecturaReemplazo == 0 && j < historicoLecturasPorMedidor.length) {
+
               if (direccion < 0) {
                 lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaInicial, quantityID, ListaMedidores[i].ID, cantidadCiclos);
 
               } else {
                 lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaFinal, quantityID, ListaMedidores[i].ID, cantidadCiclos);
-
               }
+              cantidadCiclos++;
+
+              console.log(lecturaReemplazo);
+
             }
+
+            cantidadCiclos = 1;
+
             if (lecturaReemplazo > 0) {
-              // console.log(lecturaReemplazo);
-
-
               historicoLecturasPorMedidor[j].Value = lecturaReemplazo;
               lecturaReemplazo = 0;
-              cantidadCiclos = 0;
-            } else
-              cantidadCiclos++;
+            }
+
 
           }
           historicoLecturas.push(historicoLecturasPorMedidor[j]);
@@ -374,9 +380,9 @@ export class FormulationService {
     if (!lecturaTemporalInicial) {
       lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${fecha}'))) and quantityID = ${quantityID}  and sourceID = ${medidor} ORDER BY sourceName ASC`);
     }
-    // console.log(lecturaTemporalInicial);
+    console.log(lecturaTemporalInicial);
 
-    if (lecturaTemporalInicial && lecturaTemporalFinal) {
+    if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
       return lecturaTemporalInicial[0].Value + (lecturaTemporalFinal[0].Value - lecturaTemporalInicial[0].Value);
     }
     return 0;
@@ -810,6 +816,8 @@ export class FormulationService {
       }
 
     }
+    console.log(historicoMedidorConsumo);
+
     return historicoMedidorConsumo;
   }
 
