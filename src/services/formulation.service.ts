@@ -669,6 +669,7 @@ export class FormulationService {
                 }
 
               }
+              //
 
               if (medidoresVirutalesIdentificados.operacion === suma && medidoresVirtualesRelacionados[m].estado === true && medidoresVirtualesRelacionados[m].sourceId) {
 
