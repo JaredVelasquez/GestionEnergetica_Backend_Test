@@ -22,5 +22,6 @@ export interface meterRelationSchema {
   porcentaje: number;
   operacion: boolean;
   observacion: string;
+  mostrar: boolean;
   estado: boolean;
 }

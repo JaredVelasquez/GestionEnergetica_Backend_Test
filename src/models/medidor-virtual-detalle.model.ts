@@ -44,6 +44,13 @@ export class MedidorVirtualDetalle extends Entity {
   @property({
     type: 'boolean',
     required: true,
+    mssql: {columnName: 'mostrar', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
+  })
+  mostrar: boolean;
+
+  @property({
+    type: 'boolean',
+    required: true,
     mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
   estado: boolean;

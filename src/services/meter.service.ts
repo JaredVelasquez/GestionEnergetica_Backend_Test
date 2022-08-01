@@ -26,6 +26,7 @@ export class MeterService {
       medidorId: vmeter.medidorId,
       sourceId: vmeter.sourceId,
       vmedidorId: newVirtualMeter.id,
+      mostrar: vmeter.mostrar,
       estado: true
     }
 
@@ -42,6 +43,7 @@ export class MeterService {
       operacion: vmeter.operacion,
       porcentaje: vmeter.porcentaje,
       observacion: vmeter.observacion,
+      mostrar: vmeter.mostrar,
       estado: vmeter.estado,
     }
 
