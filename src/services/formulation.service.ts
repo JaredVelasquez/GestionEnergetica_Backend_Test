@@ -212,6 +212,9 @@ export class FormulationService {
     let contratosVigentes = await this.metersOnContract(hoy, cliente);
 
     let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
+    console.log(contratosProveedorExterno);
+    console.log("---------------------------------------------------------------------------");
+
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes, PBE);
@@ -243,17 +246,17 @@ export class FormulationService {
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
-    //console.log(lecturasMedidoresPorContrato);
-    console.log("---------------------------------------------------------------");
+    // //console.log(lecturasMedidoresPorContrato);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[0].medidor);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[0].medidor);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[1].medidor);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[1].medidor);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[2].medidor);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[2].medidor);
+    // console.log("---------------------------------------------------------------");
 
     console.log(lecturasMedidoresPorContrato);
     console.log("---------------------------------------------------------------");
@@ -364,7 +367,7 @@ export class FormulationService {
 
           if (!historicoLecturasPorMedidor[j].Value) {
             let direccion = await this.identificarLecturaFaltante(new Date(historicoLecturasPorMedidor[j].TimestampUTC), generateInvoice);
-            while (lecturaReemplazo == 0 && j < historicoLecturasPorMedidor.length) {
+            while (lecturaReemplazo == 0 && j < historicoLecturasPorMedidor.length && cantidadCiclos <= 192) {
 
               if (direccion < 0) {
                 lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaInicial, quantityID, ListaMedidores[i].ID, cantidadCiclos, direccion);
@@ -374,11 +377,10 @@ export class FormulationService {
               cantidadCiclos++;
             }
 
-            if (lecturaReemplazo > 0) {
-              historicoLecturasPorMedidor[j].Value = lecturaReemplazo;
-              lecturaReemplazo = 0;
-              cantidadCiclos = 0;
-            }
+            historicoLecturasPorMedidor[j].Value = lecturaReemplazo;
+            lecturaReemplazo = 0;
+            cantidadCiclos = 0;
+
 
           }
           historicoLecturas.push(historicoLecturasPorMedidor[j]);
@@ -429,11 +431,11 @@ export class FormulationService {
 
     }
 
+    console.log("Variable: " + quantityID);
+    console.log("medidor: " + medidor + "\n" + "cantidad de cliclos: " + cantidadCiclos);
 
     if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
 
-      console.log("Variable: " + quantityID);
-      console.log("medidor: " + medidor + "\n" + "cantidad de cliclos: " + cantidadCiclos);
       console.log("Lectura final: " + lecturaTemporalFinal[0].Value);
       console.log("Lectura Inicial: " + lecturaTemporalInicial[0].Value);
       if (posicionInicial < 0) {
@@ -1194,12 +1196,13 @@ export class FormulationService {
     }
     if (LecturasFrontera == 0) {
       if (lecturasManuales.length > 1) {
-        // console.log(lecturasManuales);
+        console.log(lecturasManuales[1].valor);
+        console.log(lecturasManuales[0].valor);
 
-        LecturasFrontera = (lecturasManuales[1].valor * lecturasManuales[0].multiplicador) - (lecturasManuales[0].valor * lecturasManuales[0].multiplicador);
+        LecturasFrontera = (lecturasManuales[1].valor - lecturasManuales[0].valor) * lecturasManuales[0].multiplicador;
       }
     }
-    //console.log(LecturasFrontera);
+
     return LecturasFrontera;
   }
 
