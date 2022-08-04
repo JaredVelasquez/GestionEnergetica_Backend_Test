@@ -348,9 +348,12 @@ export class FormulationService {
 
   async getAllMetersIONDATA(generateInvoice: GenerateInvoice, quantityID: number, ListaMedidores: ION_Data_Source[]) {
     let historicoLecturas: Array<ION_Data> = [];
+    let lecturaTemporalInicial: Array<ION_Data> = [], lecturaTemporalFinal: Array<ION_Data> = [];
+    let posicionInicial: number = 1, lecturaTemporal: number = 0, posicionBuscada: number = 0;
+    let cantidadCiclos: number = 0, cantidadCiclosI: number = 0, cantidadCiclosF: number = 0;
 
-    let lecturaReemplazo: any = 0, cantidadCiclos: number = 0, cantidadCiclosI: number = 0, cantidadCiclosF: number = 0;
     for (let i = 0; i < ListaMedidores.length; i++) {
+      let lecturaReemplazo!: ION_Data;
       let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
         `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`,
       );
@@ -367,18 +370,45 @@ export class FormulationService {
 
           if (!historicoLecturasPorMedidor[j].Value) {
             let direccion = await this.identificarLecturaFaltante(new Date(historicoLecturasPorMedidor[j].TimestampUTC), generateInvoice);
-            while (lecturaReemplazo == 0 && j < historicoLecturasPorMedidor.length && cantidadCiclos <= 192) {
+            console.log("direccion: " + direccion);
+
+            while (!lecturaReemplazo && j < historicoLecturasPorMedidor.length && cantidadCiclos <= 192) {
 
               if (direccion < 0) {
-                lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaInicial, quantityID, ListaMedidores[i].ID, cantidadCiclos, direccion);
+                if (lecturaTemporalFinal.length < 1) {
+                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                }
+                if (lecturaTemporalInicial.length < 1) {
+                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+
+                }
+                if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
+                  lecturaReemplazo = await this.GenerarlecturaTemporal(quantityID, ListaMedidores[i], cantidadCiclos, direccion, lecturaTemporalInicial[0], lecturaTemporalFinal[0], generateInvoice.fechaInicial, generateInvoice.fechaFinal);
+                  lecturaTemporalInicial.length = 0;
+                  lecturaTemporalFinal.length = 0;
+                }
+
               } else {
-                lecturaReemplazo = await this.GenerarlecturaTemporal(generateInvoice.fechaFinal, quantityID, ListaMedidores[i].ID, cantidadCiclos, direccion);
+                if (lecturaTemporalFinal.length < 1) {
+                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                }
+                if (lecturaTemporalInicial.length < 1) {
+                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+
+                }
+                if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
+                  lecturaReemplazo = await this.GenerarlecturaTemporal(quantityID, ListaMedidores[i], cantidadCiclos, direccion, lecturaTemporalInicial[0], lecturaTemporalFinal[0], generateInvoice.fechaFinal, generateInvoice.fechaInicial);
+                  lecturaTemporalInicial.length = 0;
+                  lecturaTemporalFinal.length = 0;
+                }
               }
+
+              //
+
               cantidadCiclos++;
             }
 
-            historicoLecturasPorMedidor[j].Value = lecturaReemplazo;
-            lecturaReemplazo = 0;
+            historicoLecturasPorMedidor[j] = lecturaReemplazo;
             cantidadCiclos = 0;
 
 
@@ -409,54 +439,42 @@ export class FormulationService {
     return 15;
   }
 
-  async GenerarlecturaTemporal(fecha: string, quantityID: number, medidor: number, cantidadCiclos: number, direccion: number) {
-
-    let lecturaTemporalInicial!: Array<ION_Data>, lecturaTemporalFinal!: Array<ION_Data>, posicionInicial: number = 1, lecturaTemporal: number = 0, posicionBuscada: number = 0;
-
-    if (!lecturaTemporalFinal) {
-      if (posicionInicial < 0) {
-        lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${fecha}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${medidor} ORDER BY sourceName ASC`);
-      }
-      else {
-        lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * posicionInicial},'${fecha}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${medidor} ORDER BY sourceName ASC`);
-      }
-    }
-    if (!lecturaTemporalInicial) {
-      if (posicionInicial < 0) {
-        lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * posicionInicial},'${fecha}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${medidor} ORDER BY sourceName ASC`);
-      }
-      else {
-        lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${fecha}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${medidor} ORDER BY sourceName ASC`);
-      }
+  async GenerarlecturaTemporal(quantityID: number, medidor: ION_Data_Source, cantidadCiclos: number, direccion: number, lecturaTemporalInicial: ION_Data, lecturaTemporalFinal: ION_Data, fechaB: string, fechaO: string) {
+    let lecturaTemporal: ION_Data, posicionBuscada = 0;
+    lecturaTemporal = {
+      sourceID: medidor.ID,
+      TimestampUTC: "",
+      sourceName: medidor.Descripcion,
+      quantityID: quantityID,
+      quantityName: "",
+      dataLog2ID: "",
+      Value: 0,
+      Fecha: fechaB,
 
     }
+    if (lecturaTemporalInicial && lecturaTemporalFinal) {
+      console.log("Cantidad de ciclos: " + cantidadCiclos);
+      console.log("Fecha B: " + fechaB);
+      console.log("Fecha O: " + fechaO);
 
-    console.log("Variable: " + quantityID);
-    console.log("medidor: " + medidor + "\n" + "cantidad de cliclos: " + cantidadCiclos);
-
-    if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
-
-      console.log("Lectura final: " + lecturaTemporalFinal[0].Value);
-      console.log("Lectura Inicial: " + lecturaTemporalInicial[0].Value);
-      if (posicionInicial < 0) {
-        let fechaBuscada = new Date(Date.parse(fecha) - (900000 * 24)).toISOString();
-        let fechaObtenida = new Date(Date.parse(lecturaTemporalFinal[0].Fecha) + (900000)).toISOString();
-        posicionBuscada = ((Date.parse(fechaObtenida)) - (Date.parse(fechaBuscada))) / 900000;
-        lecturaTemporal = (((lecturaTemporalFinal[0].Value - lecturaTemporalInicial[0].Value) / cantidadCiclos) * (posicionBuscada)) + lecturaTemporalInicial[0].Value
-
+      if (direccion < 0) {
+        let fechaBuscada = new Date(Date.parse(fechaB) - (900000 * 24)).toISOString();
+        let fechaEncontrada = new Date(Date.parse(lecturaTemporalInicial.Fecha) + (900000)).toISOString();
+        posicionBuscada = ((Date.parse(fechaBuscada)) - (Date.parse(fechaEncontrada))) / 900000;
+      } else {
+        let fechaBuscada = new Date(Date.parse(fechaB) - (900000 * 24)).toISOString();
+        let fechaEncontrada = new Date(Date.parse(lecturaTemporalInicial.Fecha) + (900000)).toISOString();
+        posicionBuscada = ((Date.parse(fechaBuscada)) - (Date.parse(fechaEncontrada))) / 900000;
       }
-      else {
-        let fechaBuscada = new Date(Date.parse(fecha) - (900000 * 24)).toISOString();
-        let fechaObtenida = new Date(Date.parse(lecturaTemporalInicial[0].Fecha) + (900000)).toISOString();
-        posicionBuscada = ((Date.parse(fechaBuscada)) - (Date.parse(fechaObtenida))) / 900000;
-        lecturaTemporal = (((lecturaTemporalFinal[0].Value - lecturaTemporalInicial[0].Value) / cantidadCiclos) * posicionBuscada) + lecturaTemporalInicial[0].Value
-
-
-      }
+      console.log("Posicion Buscada: " + posicionBuscada);
+      lecturaTemporal.Value = (((lecturaTemporalFinal.Value - lecturaTemporalInicial.Value) / cantidadCiclos) * (posicionBuscada)) + lecturaTemporalInicial.Value
+      console.log(lecturaTemporal);
 
       return lecturaTemporal;
     }
-    return 0;
+    console.log(lecturaTemporal);
+
+    return lecturaTemporal;
 
   }
   async ObtenerLecturaManualHistorica(historicoLecturasPorMedidor: ION_Data, generateInvoice: GenerateInvoice, quantityID: number): Promise<ION_Data> {
