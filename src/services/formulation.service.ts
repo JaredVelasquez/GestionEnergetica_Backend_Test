@@ -162,6 +162,7 @@ export interface LecturasPorContrato {
   PPS: number,
   PBE: number,
   ModoCalculoSolar: boolean,
+  diasFacturados: number,
 }
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -212,12 +213,10 @@ export class FormulationService {
     let contratosVigentes = await this.metersOnContract(hoy, cliente);
 
     let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
-    console.log(contratosProveedorExterno);
-    console.log("---------------------------------------------------------------------------");
 
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
-    let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes, PBE);
+    let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosVigentes, PBE, generateInvoice);
 
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
     //console.log(lecturasMedidoresPorContrato);
@@ -246,7 +245,7 @@ export class FormulationService {
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
-    // //console.log(lecturasMedidoresPorContrato);
+    // console.log(lecturasMedidoresPorContrato);
     // console.log("---------------------------------------------------------------");
 
     // console.log(lecturasMedidoresPorContrato[0].medidor);
@@ -258,7 +257,7 @@ export class FormulationService {
     // console.log(lecturasMedidoresPorContrato[2].medidor);
     // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato);
+    // console.log(lecturasMedidoresPorContrato);
     console.log("---------------------------------------------------------------");
     console.log("EAC" + ESG);
     console.log("ECR: " + ECR);
@@ -370,7 +369,6 @@ export class FormulationService {
 
           if (!historicoLecturasPorMedidor[j].Value) {
             let direccion = await this.identificarLecturaFaltante(new Date(historicoLecturasPorMedidor[j].TimestampUTC), generateInvoice);
-            console.log("direccion: " + direccion);
 
             while (!lecturaReemplazo && j < historicoLecturasPorMedidor.length && cantidadCiclos <= 192) {
 
@@ -453,9 +451,9 @@ export class FormulationService {
 
     }
     if (lecturaTemporalInicial && lecturaTemporalFinal) {
-      console.log("Cantidad de ciclos: " + cantidadCiclos);
-      console.log("Fecha B: " + fechaB);
-      console.log("Fecha O: " + fechaO);
+      // console.log("Cantidad de ciclos: " + cantidadCiclos);
+      // console.log("Fecha B: " + fechaB);
+      // console.log("Fecha O: " + fechaO);
 
       if (direccion < 0) {
         let fechaBuscada = new Date(Date.parse(fechaB) - (900000 * 24)).toISOString();
@@ -466,13 +464,13 @@ export class FormulationService {
         let fechaEncontrada = new Date(Date.parse(lecturaTemporalInicial.Fecha) + (900000)).toISOString();
         posicionBuscada = ((Date.parse(fechaBuscada)) - (Date.parse(fechaEncontrada))) / 900000;
       }
-      console.log("Posicion Buscada: " + posicionBuscada);
+      // console.log("Posicion Buscada: " + posicionBuscada);
       lecturaTemporal.Value = (((lecturaTemporalFinal.Value - lecturaTemporalInicial.Value) / cantidadCiclos) * (posicionBuscada)) + lecturaTemporalInicial.Value
-      console.log(lecturaTemporal);
+      // console.log(lecturaTemporal);
 
       return lecturaTemporal;
     }
-    console.log(lecturaTemporal);
+    // console.log(lecturaTemporal);
 
     return lecturaTemporal;
 
@@ -953,7 +951,7 @@ export class FormulationService {
   }
 
 
-  async identifyMetersOnContract(lecturasMedidores: MedidorSelect[], listadoContratosMedidor: ContractMeter[], PBE: number) {
+  async identifyMetersOnContract(lecturasMedidores: MedidorSelect[], listadoContratosMedidor: ContractMeter[], PBE: number, generateInvoice: GenerateInvoice) {
 
 
     let LecturasResultantes: LecturasPorContrato[] = [];
@@ -1056,7 +1054,8 @@ export class FormulationService {
               FPTotal: 0,
               PPS: 0,
               PBE: PBE,
-              ModoCalculoSolar: false
+              ModoCalculoSolar: false,
+              diasFacturados: (Date.parse(generateInvoice.fechaFinal) - Date.parse(generateInvoice.fechaInicial)) / ((900000 * 4) * 24),
             });
 
           }
@@ -1155,7 +1154,8 @@ export class FormulationService {
               PPPTT: 0,
               PPS: 0,
               PBE: 0,
-              ModoCalculoSolar: false
+              ModoCalculoSolar: false,
+              diasFacturados: (Date.parse(generateInvoice.fechaFinal) - Date.parse(generateInvoice.fechaInicial)) / ((900000 * 4) * 24),
             });
 
           }
@@ -1214,8 +1214,8 @@ export class FormulationService {
     }
     if (LecturasFrontera == 0) {
       if (lecturasManuales.length > 1) {
-        console.log(lecturasManuales[1].valor);
-        console.log(lecturasManuales[0].valor);
+        // console.log(lecturasManuales[1].valor);
+        // console.log(lecturasManuales[0].valor);
 
         LecturasFrontera = (lecturasManuales[1].valor - lecturasManuales[0].valor) * lecturasManuales[0].multiplicador;
       }
@@ -1298,14 +1298,15 @@ export class FormulationService {
       });
 
       listadoContratosMedidor[i].cargo?.push({
+        nombre: 'Perdidas de transformación',
+        valorAjustado: listadoContratosMedidor[i].PPPTT * (totalCargos * PPT),
+      });
+
+      listadoContratosMedidor[i].cargo?.push({
         nombre: 'Cargo Reactivo',
         valorAjustado: listadoContratosMedidor[i].PCFRTotal * cargoReactivo,
       });
 
-      listadoContratosMedidor[i].cargo?.push({
-        nombre: 'Perdidas de transformación',
-        valorAjustado: listadoContratosMedidor[i].PPPTT * (totalCargos * PPT),
-      });
       //console.log(listadoContratosMedidor[i].PCFRTotal * cargoReactivo);
       total += listadoContratosMedidor[i].PPPTT * (totalCargos * PPT);
       total += listadoContratosMedidor[i].CEFTotal;
