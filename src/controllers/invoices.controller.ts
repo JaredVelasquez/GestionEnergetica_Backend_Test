@@ -165,7 +165,7 @@ export class InvoicesController {
   async getHistoric(id: number) {
 
     return await this.facturaRepository.dataSource.execute(
-      `${viewOf.GET_INVOICES} Where estado = 2 and contratoId = ${id} ORDER BY fechaFin DESC`,
+      `${viewOf.GET_INVOICES} Where estado = 2 and contratoId = ${id} ORDER BY fechaInicio ASC`,
     );
   }
 
