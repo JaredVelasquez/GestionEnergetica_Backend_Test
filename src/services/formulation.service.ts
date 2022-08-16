@@ -439,6 +439,7 @@ export class FormulationService {
 
   async GenerarlecturaTemporal(quantityID: number, medidor: ION_Data_Source, cantidadCiclos: number, direccion: number, lecturaTemporalInicial: ION_Data, lecturaTemporalFinal: ION_Data, fechaB: string, fechaO: string) {
     let lecturaTemporal: ION_Data, posicionBuscada = 0;
+
     lecturaTemporal = {
       sourceID: medidor.ID,
       TimestampUTC: "",
@@ -447,7 +448,7 @@ export class FormulationService {
       quantityName: "",
       dataLog2ID: "",
       Value: 0,
-      Fecha: fechaB,
+      Fecha: new Date(Date.parse(fechaB) - (900000 * 24)).toISOString(),
 
     }
     if (lecturaTemporalInicial && lecturaTemporalFinal) {
