@@ -928,7 +928,7 @@ export class FormulationService {
 
   async metersOnContract(today: string, tipoContrato: number) {
     let contratosVigentes = this.medidorRepository.dataSource.execute(
-      `${viewOf.GET_CMETERS} where estado = 1 and fechaCreacion < '${today}' and fechaVenc > '${today}'  and tipoContratoId = ${tipoContrato}`,
+      `${viewOf.GET_CMETERS} where estado = 1 and estadocm = 1  and fechaCreacion < '${today}' and fechaVenc > '${today}'  and tipoContratoId = ${tipoContrato}`,
     );
 
     return contratosVigentes;
