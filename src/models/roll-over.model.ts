@@ -23,22 +23,26 @@ export class RollOver extends Entity {
 
   @property({
     type: 'date',
-    mssql: {columnName: 'fechaInicial', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    required: true,
+    mssql: {columnName: 'fechaInicial', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
   fechaInicial: string;
 
   @property({
     type: 'date',
-    mssql: {columnName: 'fechaFinal', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    required: true,
+    mssql: {columnName: 'fechaFinal', dataType: 'datetime', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'NO'},
   })
   fechaFinal: string;
 
-
   @property({
-    type: 'boolean',
-    mssql: {columnName: 'energia', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    type: 'number',
+    required: true,
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'energia', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
   })
-  energia: boolean;
+  energia: number;
 
   @property({
     type: 'number',
@@ -60,13 +64,13 @@ export class RollOver extends Entity {
     length: -1,
     mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  observacion: string;
+  observacion?: string;
 
   @property({
     type: 'boolean',
     mssql: {columnName: 'estado', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  estado: boolean;
+  estado?: boolean;
 
   // Define well-known properties here
 

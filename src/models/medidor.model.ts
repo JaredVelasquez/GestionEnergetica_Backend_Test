@@ -54,7 +54,7 @@ export class Medidor extends Entity {
     scale: 0,
     mssql: {columnName: 'multiplicador', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  multiplicador: number;
+  multiplicador?: number;
 
   @property({
     type: 'number',
@@ -65,12 +65,11 @@ export class Medidor extends Entity {
 
   @property({
     type: 'number',
-    required: true,
     precision: 10,
     scale: 0,
-    mssql: {columnName: 'puntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'NO'},
+    mssql: {columnName: 'puntoMedicionId', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  puntoMedicionId: number;
+  puntoMedicionId?: number;
 
   @property({
     type: 'string',
@@ -106,10 +105,12 @@ export class Medidor extends Entity {
   almacenamientoLocal?: boolean;
 
   @property({
-    type: 'boolean',
-    mssql: {columnName: 'funcionalidad', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+    type: 'number',
+    precision: 10,
+    scale: 0,
+    mssql: {columnName: 'funcionalidad', dataType: 'int', dataLength: null, dataPrecision: 10, dataScale: 0, nullable: 'YES'},
   })
-  funcionalidad?: boolean;
+  funcionalidad?: number;
 
   @property({
     type: 'boolean',

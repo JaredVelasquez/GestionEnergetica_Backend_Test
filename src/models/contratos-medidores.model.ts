@@ -45,6 +45,12 @@ export class ContratosMedidores extends Entity {
   fechaFinal?: string;
 
   @property({
+    type: 'boolean',
+    mssql: {columnName: 'mostrar', dataType: 'bit', dataLength: null, dataPrecision: null, dataScale: null, nullable: 'YES'},
+  })
+  mostrar?: boolean;
+
+  @property({
     type: 'string',
     length: -1,
     mssql: {columnName: 'observacion', dataType: 'varchar', dataLength: -1, dataPrecision: null, dataScale: null, nullable: 'YES'},

@@ -29,3 +29,5 @@ export * from './zona.model';
 
 
 
+export * from './medidor.model';
+export * from './roll-over.model';
