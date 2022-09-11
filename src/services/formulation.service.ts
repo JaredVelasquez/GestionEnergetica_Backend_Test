@@ -747,13 +747,30 @@ export class FormulationService {
       for (let j = 0; j < lecturasEnergiaActivaFinal[i].medidor.length; j++) {
 
         let medidorIdentificado = await this.medidorRepository.findOne({where: {sourceId: lecturasEnergiaActivaFinal[i].medidor[j].sourceID}});
+
         let medidoresVirtualesRelacionados = await this.medidorVirtualDetalleRepository.find({where: {medidorId: medidorIdentificado?.id}});
+
+        console.log("------------------------------------------------------------------");
+        console.log("MEDIDOR IDENTIFICADO Y RELACIONADO");
+
+        console.log(medidorIdentificado);
+        console.log(medidoresVirtualesRelacionados);
+        console.log("------------------------------------------------------------------");
 
 
         if (medidoresVirtualesRelacionados.length > 0) {
           for (let m = 0; m < medidoresVirtualesRelacionados.length; m++) {
             let medidoresVirutalesIdentificados = await this.medidorVirtualRepository.findOne({where: {id: medidoresVirtualesRelacionados[m].vmedidorId}});
+            // if (medidoresVirtualesRelacionados[m].id == 60) {
+            //   console.log("------------------------------------------------------------------");
+            //   console.log("MATCH MEDIDOR VIRTUAL");
 
+            //   console.log(medidoresVirtualesRelacionados[m]);
+
+            //   console.log(vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || -1));
+            //   console.log("-----------------------------------------------------------------------");
+
+            // }
             if (medidoresVirutalesIdentificados) {
 
               if (medidoresVirutalesIdentificados.operacion === resta && medidoresVirtualesRelacionados[m].estado && !medidoresVirtualesRelacionados[m].sourceId && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || 0)) {
@@ -797,12 +814,15 @@ export class FormulationService {
 
               }
 
+
               if (medidoresVirutalesIdentificados.operacion === resta && medidoresVirtualesRelacionados[m].estado && medidoresVirtualesRelacionados[m].sourceId) {
+
 
                 for (let h = 0; h < lecturasEnergiaActivaFinal.length; h++) {
 
                   for (let l = 0; l < lecturasEnergiaActivaFinal[h].medidor.length; l++) {
-                    if (lecturasEnergiaActivaFinal[h].medidor[l].sourceID === medidoresVirtualesRelacionados[m].sourceId && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || 0)) {
+
+                    if (lecturasEnergiaActivaFinal[h].medidor[l].sourceID === medidoresVirtualesRelacionados[m].sourceId && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || -1)) {
 
                       if (!lecturasEnergiaActivaFinal[i].vmedidor) {
                         lecturasEnergiaActivaFinal[i].vmedidor = [{
