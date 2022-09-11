@@ -690,6 +690,7 @@ export class FormulationService {
     consumoActivoAux = consumoActivoAux < 0 ? (consumoActivoAux * -1) : consumoActivoAux;
     consumoReactivoAux = consumoReactivoAux < 0 ? (consumoReactivoAux * -1) : consumoReactivoAux;
     consumoActivoExportadoAux = consumoActivoExportadoAux < 0 ? (consumoActivoExportadoAux * -1) : consumoActivoExportadoAux;
+
     if (rollOver) {
       for (let c = 0; c < rollOver.length; c++) {
 
@@ -761,16 +762,7 @@ export class FormulationService {
         if (medidoresVirtualesRelacionados.length > 0) {
           for (let m = 0; m < medidoresVirtualesRelacionados.length; m++) {
             let medidoresVirutalesIdentificados = await this.medidorVirtualRepository.findOne({where: {id: medidoresVirtualesRelacionados[m].vmedidorId}});
-            // if (medidoresVirtualesRelacionados[m].id == 60) {
-            //   console.log("------------------------------------------------------------------");
-            //   console.log("MATCH MEDIDOR VIRTUAL");
 
-            //   console.log(medidoresVirtualesRelacionados[m]);
-
-            //   console.log(vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || -1));
-            //   console.log("-----------------------------------------------------------------------");
-
-            // }
             if (medidoresVirutalesIdentificados) {
 
               if (medidoresVirutalesIdentificados.operacion === resta && medidoresVirtualesRelacionados[m].estado && !medidoresVirtualesRelacionados[m].sourceId && !vmetersRegistered.includes(medidoresVirtualesRelacionados[m].id || 0)) {
@@ -862,6 +854,7 @@ export class FormulationService {
 
                       console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActivaExportada * medidoresVirutalesIdentificados.porcentaje));
 
+                      console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje));
                       lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActivaExportada * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
