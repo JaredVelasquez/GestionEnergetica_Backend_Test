@@ -237,6 +237,7 @@ export class FormulationService {
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosClientes, PBE, generateInvoice);
 
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
+    lecturasMedidoresPorContrato = await this.lecturasDespuesDeAjustes(lecturasMedidoresPorContrato);
 
     let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva, MedidorFronteraSourceID);
     ECR = await this.LecturasMedidorFrontera(historicoMedidorConsumo, EnergiaActiva, lecturasManuales, contratosProveedorExterno, 0);
@@ -304,6 +305,19 @@ export class FormulationService {
     return lecturasMedidoresPorContrato;
   }
 
+  async lecturasDespuesDeAjustes(lecturasMedidoresPorContrato: LecturasPorContrato[]) {
+    for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
+      lecturasMedidoresPorContrato[i].totalLecturaActivaAjustada = 0;
+      lecturasMedidoresPorContrato[i].totalLecturaReactivaAjustada = 0;
+      for (let j = 0; j < lecturasMedidoresPorContrato[i].medidor.length; j++) {
+        if (lecturasMedidoresPorContrato[i].medidor[j].funcionalidad === 0) {
+          lecturasMedidoresPorContrato[i].totalLecturaActivaAjustada += lecturasMedidoresPorContrato[i].medidor[j].LecturaActiva;
+          lecturasMedidoresPorContrato[i].totalLecturaReactivaAjustada += lecturasMedidoresPorContrato[i].medidor[j].LecturaReactiva;
+        }
+      }
+    }
+    return lecturasMedidoresPorContrato;
+  }
   async DistribucionDeInyeccionSolar(lecturasMedidoresPorContrato: LecturasPorContrato[], ESIR: number, PBE: number) {
 
     for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
@@ -319,7 +333,7 @@ export class FormulationService {
     for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
       for (let j = 0; j < lecturasMedidoresPorContrato[i].medidor.length; j++) {
         if (lecturasMedidoresPorContrato[i].medidor[j].funcionalidad === 0) {
-          lecturasMedidoresPorContrato[i].medidor[j].PPPT = lecturasMedidoresPorContrato[i].medidor[j].ConsumoExterno / ETCE;
+          lecturasMedidoresPorContrato[i].medidor[j].PPPT = lecturasMedidoresPorContrato[i].medidor[j].LecturaActiva / ETCE;
           lecturasMedidoresPorContrato[i].PPPTT += lecturasMedidoresPorContrato[i].medidor[j].PPPT;
           lecturasMedidoresPorContrato[i].PT = PPT;
           lecturasMedidoresPorContrato[i].ESG = ESG;
