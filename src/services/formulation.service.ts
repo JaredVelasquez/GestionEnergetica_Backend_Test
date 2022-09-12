@@ -252,6 +252,7 @@ export class FormulationService {
 
     ETCE = await this.energiaActivaConsumidaPorClientes(lecturasMedidoresPorContrato);
     ETCE -= ESG + ESIR;
+    ESG -= ESIR;
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
@@ -264,19 +265,19 @@ export class FormulationService {
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
-    // console.log(lecturasMedidoresPorContrato);
-    // console.log("---------------------------------------------------------------");
+    console.log(lecturasMedidoresPorContrato);
+    console.log("---------------------------------------------------------------");
 
-    // console.log(lecturasMedidoresPorContrato[0].medidor);
-    // console.log("---------------------------------------------------------------");
+    console.log(lecturasMedidoresPorContrato[0]);
+    console.log("---------------------------------------------------------------");
 
-    // console.log(lecturasMedidoresPorContrato[1].medidor);
-    // console.log("---------------------------------------------------------------");
+    console.log(lecturasMedidoresPorContrato[1]);
+    console.log("---------------------------------------------------------------");
 
-    // console.log(lecturasMedidoresPorContrato[2].medidor);
-    // console.log("---------------------------------------------------------------");
+    console.log(lecturasMedidoresPorContrato[2]);
+    console.log("---------------------------------------------------------------");
 
-    // console.log(lecturasMedidoresPorContrato);
+    console.log(lecturasMedidoresPorContrato);
     console.log("---------------------------------------------------------------");
     console.log("ESG: " + ESG);
     console.log("ECR: " + ECR);
@@ -306,8 +307,7 @@ export class FormulationService {
   async DistribucionDeInyeccionSolar(lecturasMedidoresPorContrato: LecturasPorContrato[], ESIR: number, PBE: number) {
 
     for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
-      lecturasMedidoresPorContrato[i].totalEnergiaDeInyeccionConsumida = lecturasMedidoresPorContrato[i].PPPTT * ESIR;
-      lecturasMedidoresPorContrato[i].totalEnergiaFotovoltaicaActivaConsumida += lecturasMedidoresPorContrato[i].totalEnergiaDeInyeccionConsumida;
+      lecturasMedidoresPorContrato[i].totalEnergiaDeInyeccionConsumida += lecturasMedidoresPorContrato[i].PPPTT * ESIR;
       lecturasMedidoresPorContrato[i].CEFTotal += lecturasMedidoresPorContrato[i].totalEnergiaDeInyeccionConsumida * PBE;
     }
 
@@ -751,12 +751,12 @@ export class FormulationService {
 
         let medidoresVirtualesRelacionados = await this.medidorVirtualDetalleRepository.find({where: {medidorId: medidorIdentificado?.id}});
 
-        console.log("------------------------------------------------------------------");
-        console.log("MEDIDOR IDENTIFICADO Y RELACIONADO");
+        // console.log("------------------------------------------------------------------");
+        // console.log("MEDIDOR IDENTIFICADO Y RELACIONADO");
 
-        console.log(medidorIdentificado);
-        console.log(medidoresVirtualesRelacionados);
-        console.log("------------------------------------------------------------------");
+        // console.log(medidorIdentificado);
+        // console.log(medidoresVirtualesRelacionados);
+        // console.log("------------------------------------------------------------------");
 
 
         if (medidoresVirtualesRelacionados.length > 0) {
@@ -849,18 +849,18 @@ export class FormulationService {
                       }
 
                       lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
-                      console.log("--------------------------------------------------------");
-                      console.log(lecturasEnergiaActivaFinal[i].medidor[j].sourceName + " : " + lecturasEnergiaActivaFinal[i].medidor[j].sourceName);
+                      // console.log("--------------------------------------------------------");
+                      // console.log(lecturasEnergiaActivaFinal[i].medidor[j].sourceName + " : " + lecturasEnergiaActivaFinal[i].medidor[j].sourceName);
 
-                      console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActivaExportada * medidoresVirutalesIdentificados.porcentaje));
+                      // console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActivaExportada * medidoresVirutalesIdentificados.porcentaje));
 
-                      console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje));
+                      // console.log(lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva + " : " + medidoresVirutalesIdentificados.operacion + " : " + (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje));
                       lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActivaExportada * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
-                      console.log("RESULTADO: " + lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva);
+                      // console.log("RESULTADO: " + lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva);
 
-                      console.log("--------------------------------------------------------");
+                      // console.log("--------------------------------------------------------");
 
                     }
 
@@ -1220,9 +1220,6 @@ export class FormulationService {
                     multiplicador: lecturasMedidores[i].multiplicador,
                   }
                 });
-                LecturasResultantes[c].totalEnergiaFotovoltaicaActivaConsumida += lecturasMedidores[i].totalLecturaActiva;
-                LecturasResultantes[c].totalEnergiaFotovoltaicaReactivaConsumida += lecturasMedidores[i].totalLecturaReactiva;
-                LecturasResultantes[c].totalEnergiaFotovoltaicaActivaConsumida -= LecturasResultantes[c].totalEnergiaActivaExportada;
                 // LecturasResultantes[c].totalLecturaActivaAjustada -= LecturasResultantes[c].totalEnergiaFotovoltaicaActivaConsumida;
                 // LecturasResultantes[c].totalLecturaReactivaAjustada -= LecturasResultantes[c].totalEnergiaFotovoltaicaReactivaConsumida;
                 isDetected = true
@@ -1278,7 +1275,7 @@ export class FormulationService {
               }],
               totalLecturaActivaAjustada: 0,
               totalLecturaReactivaAjustada: 0,
-              totalEnergiaFotovoltaicaActivaConsumida: lecturasMedidores[i].totalLecturaActiva - lecturasMedidores[i].lecturaActivaExportada,
+              totalEnergiaFotovoltaicaActivaConsumida: lecturasMedidores[i].totalLecturaActiva,
               totalEnergiaFotovoltaicaReactivaConsumida: lecturasMedidores[i].totalLecturaReactiva,
               totalEnergiaActivaExportada: 0,
               totalEnergiaDeInyeccionConsumida: 0,
@@ -1488,10 +1485,12 @@ export class FormulationService {
   async CargoPorEnergiaFotovoltaicaPorMedidor(LecturasPorMedidor: LecturasPorContrato[], PBE: number, FS: number, ESG: number, ETCR: number) {
     let metodoDistribucionInterna: boolean = false;
     for (let i = 0; i < LecturasPorMedidor.length; i++) {
+      LecturasPorMedidor[i].totalEnergiaFotovoltaicaActivaConsumida = 0;
       for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
         if (LecturasPorMedidor[i].medidor[j].funcionalidad === 1) {
           LecturasPorMedidor[i].medidor[j].CEF = PBE * LecturasPorMedidor[i].medidor[j].LecturaActiva;
           LecturasPorMedidor[i].CEFTotal += LecturasPorMedidor[i].medidor[j].CEF;
+          LecturasPorMedidor[i].totalEnergiaFotovoltaicaActivaConsumida += LecturasPorMedidor[i].medidor[j].LecturaActiva;
           LecturasPorMedidor[i].PBE = PBE;
           metodoDistribucionInterna = true;
           LecturasPorMedidor[i].ModoCalculoSolar = true;
