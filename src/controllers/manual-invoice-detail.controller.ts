@@ -39,7 +39,6 @@ export class ManualInvoiceDetailController {
       valor: chargues.valor,
       estado: true
     }
-    console.log(newCargo);
 
     let facturaExist = await this.facturaManualRepository.findById(chargues.facturaId);
 

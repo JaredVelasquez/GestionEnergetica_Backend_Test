@@ -23,12 +23,12 @@ export class TipoCargoFacturaManual extends Entity {
   nombre: string;
 
   @property({
-    type: 'number',
+    type: 'string',
     required: true,
     precision: 53,
     mssql: {columnName: 'valor', dataType: 'float', dataLength: null, dataPrecision: 53, dataScale: null, nullable: 'NO'},
   })
-  valor: number;
+  valor: string;
 
   @property({
     type: 'boolean',

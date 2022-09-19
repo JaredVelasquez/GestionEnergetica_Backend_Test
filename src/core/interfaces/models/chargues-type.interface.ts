@@ -1,6 +1,6 @@
 export interface ChargueTypeManualInvoice {
   nombre: string,
-  valor: number,
+  valor: string,
   facturaId: number
   estado: boolean,
 }
