@@ -266,19 +266,19 @@ export class FormulationService {
     lecturasMedidoresPorContrato = await this.PorcentajePenalizacionPorFP(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.CargoPorEnergiaFotovoltaicaPorMedidor(lecturasMedidoresPorContrato, PBE, FS, EAC, ETCR);
     lecturasMedidoresPorContrato = await this.ProporcionClienteFinal(lecturasMedidoresPorContrato, ECR);
-    console.log(lecturasMedidoresPorContrato);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[0]);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[0]);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[1]);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[1]);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato[2]);
-    console.log("---------------------------------------------------------------");
+    // console.log(lecturasMedidoresPorContrato[2]);
+    // console.log("---------------------------------------------------------------");
 
-    console.log(lecturasMedidoresPorContrato);
+    // console.log(lecturasMedidoresPorContrato);
     console.log("---------------------------------------------------------------");
     console.log("ESG: " + ESG);
     console.log("ECR: " + ECR);
@@ -814,9 +814,9 @@ export class FormulationService {
                 lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva -= (lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva * medidoresVirutalesIdentificados.porcentaje);
                 lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
 
-                lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
-                lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva -= (lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
-                lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
+                // // lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
+                // // lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva -= (lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
+                // // lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
 
               }
 
@@ -948,18 +948,18 @@ export class FormulationService {
                       lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva += (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[i].totalLecturaActivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaActiva;
 
-                      lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
-                      lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva += (lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
-                      lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
+                      // lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
+                      // lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva += (lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
+                      // lecturasEnergiaActivaFinal[i].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[i].medidor[j].LecturaReactiva;
 
 
                       lecturasEnergiaActivaFinal[h].totalLecturaActivaAjustada -= lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva;
                       lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva * medidoresVirutalesIdentificados.porcentaje);
                       lecturasEnergiaActivaFinal[h].totalLecturaActivaAjustada += lecturasEnergiaActivaFinal[h].medidor[l].LecturaActiva;
 
-                      lecturasEnergiaActivaFinal[h].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva;
-                      lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
-                      lecturasEnergiaActivaFinal[h].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva;
+                      // lecturasEnergiaActivaFinal[h].totalLecturaReactivaAjustada -= lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva;
+                      // lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva -= (lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva * medidoresVirutalesIdentificados.porcentaje);
+                      // lecturasEnergiaActivaFinal[h].totalLecturaReactivaAjustada += lecturasEnergiaActivaFinal[h].medidor[l].LecturaReactiva;
 
                     }
 
@@ -1613,12 +1613,14 @@ export class FormulationService {
   }
 
   async FactorDePotencia(listadoContratosMedidor: LecturasPorContrato[]) {
+    let cantidadMedidores: number = 0;
     for (let i = 0; i < listadoContratosMedidor.length; i++) {
       for (let j = 0; j < listadoContratosMedidor[i].medidor.length; j++) {
         let total = listadoContratosMedidor[i].medidor[j].LecturaActiva + listadoContratosMedidor[i].medidor[j].LecturaReactiva;
 
-        if (listadoContratosMedidor[i].medidor[j].LecturaActiva > 0 && listadoContratosMedidor[i].medidor[j].LecturaReactiva > 0) {
+        if (listadoContratosMedidor[i].medidor[j].LecturaActiva > 0 && listadoContratosMedidor[i].medidor[j].LecturaReactiva > 0 && listadoContratosMedidor[i].medidor[j].funcionalidad === 0) {
           listadoContratosMedidor[i].medidor[j].FP = (listadoContratosMedidor[i].medidor[j].LecturaActiva) / Math.sqrt(Math.pow(listadoContratosMedidor[i].medidor[j].LecturaActiva, 2) + Math.pow(listadoContratosMedidor[i].medidor[j].LecturaReactiva, 2));
+          cantidadMedidores++;
         } else {
           listadoContratosMedidor[i].medidor[j].FP = 0;
         }
@@ -1628,10 +1630,10 @@ export class FormulationService {
         //console.log(listadoContratosMedidor[i].medidor[j].FP);
 
       }
-      if (listadoContratosMedidor[i].FPTotal > 0) {
-        listadoContratosMedidor[i].FPTotal /= listadoContratosMedidor[i].medidor.length;
-      }
+      listadoContratosMedidor[i].FPTotal = (listadoContratosMedidor[i].totalLecturaActivaAjustada) / Math.sqrt(Math.pow(listadoContratosMedidor[i].totalLecturaActivaAjustada, 2) + Math.pow(listadoContratosMedidor[i].totalLecturaReactivaAjustada, 2));
+
     }
+
     return listadoContratosMedidor;
   }
 
@@ -1639,7 +1641,7 @@ export class FormulationService {
     let EAPFR = 0;
     for (let i = 0; i < listadoContratosMedidor.length; i++) {
       for (let j = 0; j < listadoContratosMedidor[i].medidor.length; j++) {
-        if (listadoContratosMedidor[i].medidor[j].FP < 0.90) {
+        if (listadoContratosMedidor[i].medidor[j].FP < 0.90 && listadoContratosMedidor[i].medidor[j].funcionalidad == 0) {
           EAPFR += listadoContratosMedidor[i].medidor[j].LecturaActiva;
         }
       }
@@ -1648,7 +1650,7 @@ export class FormulationService {
 
     for (let i = 0; i < listadoContratosMedidor.length; i++) {
       for (let j = 0; j < listadoContratosMedidor[i].medidor.length; j++) {
-        if (listadoContratosMedidor[i].medidor[j].FP < 0.90) {
+        if (listadoContratosMedidor[i].medidor[j].FP < 0.90 && listadoContratosMedidor[i].medidor[j].funcionalidad == 0) {
           listadoContratosMedidor[i].medidor[j].PCFR = listadoContratosMedidor[i].medidor[j].LecturaActiva / EAPFR;
           // console.log('-----------------------------------------');
           // console.log('Penalizacion por FP');
