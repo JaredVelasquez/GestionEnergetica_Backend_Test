@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {RollOver} from '../models';
 import {RollOverRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class RollOverController {
   constructor(
     @repository(RollOverRepository)
-    public rollOverRepository : RollOverRepository,
-  ) {}
+    public rollOverRepository: RollOverRepository,
+  ) { }
 
   @post('/roll-overs')
   @response(200, {

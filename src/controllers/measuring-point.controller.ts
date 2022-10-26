@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {PuntoMedicion} from '../models';
 import {PuntoMedicionRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class MeasuringPointController {
   constructor(
     @repository(PuntoMedicionRepository)
-    public puntoMedicionRepository : PuntoMedicionRepository,
-  ) {}
+    public puntoMedicionRepository: PuntoMedicionRepository,
+  ) { }
 
   @post('/punto-medicions')
   @response(200, {

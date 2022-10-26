@@ -12,6 +12,8 @@ import multer from 'multer';
 import path from 'path';
 import {FILE_UPLOAD_SERVICE, STORAGE_DIRECTORY} from './core/library/keys';
 import {AdministradorStrategy} from './estrategies/admin.strategy';
+import {OwnerStrategy} from './estrategies/owner.strategy';
+import {ViewerStrategy} from './estrategies/viewer.strategy';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -45,6 +47,8 @@ export class GestionEnergeticaApp extends BootMixin(
       },
     };
     registerAuthenticationStrategy(this, AdministradorStrategy);
+    registerAuthenticationStrategy(this, OwnerStrategy);
+    registerAuthenticationStrategy(this, ViewerStrategy);
     this.component(AuthenticationComponent);
 
     this.configureFileUpload(options.fileStorageDirectory);

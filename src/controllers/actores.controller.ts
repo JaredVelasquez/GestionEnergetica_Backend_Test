@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core/dist';
 import {
   Count,
@@ -24,6 +25,7 @@ export class ActoresController {
     private actorService: ActorService,
   ) { }
 
+  @authenticate('admin', 'owner')
   @post('/actores')
   @response(200, {
     description: 'Actores model instance',

@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -15,6 +16,8 @@ import {viewOf} from '../core/library/views.library';
 import {CargosFactura} from '../models';
 import {CargosFacturaRepository} from '../repositories';
 
+
+@authenticate('admin', 'owner')
 export class EspecialChargesController {
   constructor(
     @repository(CargosFacturaRepository)

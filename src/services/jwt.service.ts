@@ -8,6 +8,13 @@ import {CodigoVerificacionRepository, CredencialesRepository, UsuarioRepository}
 import {EncriptDecryptService} from './encript-decrypt.service';
 import {UserService} from "./user.service";
 const jsonwebtoken = require('jsonwebtoken');
+var shortid = require('shortid-36');
+
+interface token {
+  exp: number,
+  data: {UserID: number, UserNAME: string, Role: number},
+  iat: number
+}
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class JWTService {
@@ -26,6 +33,8 @@ export class JWTService {
 
 
   createToken(credentials: any, user: any) {
+    console.log(new Date(keys.TOKEN_EXPIRATION_TIME).toISOString());
+
     try {
       let token = jsonwebtoken.sign({
         exp: keys.TOKEN_EXPIRATION_TIME,
@@ -47,7 +56,7 @@ export class JWTService {
     if (!token)
       throw new HttpErrors[401]("Token vacio")
     let decoded = jsonwebtoken.verify(token, keys.JWT_SECRET_KEY);
-
+    console.log(decoded);
     if (decoded)
       return decoded;
     else
@@ -111,6 +120,18 @@ export class JWTService {
 
   // }
 
+  async generateCode(userExist: Credenciales) {
+
+    let verificationCode: string = shortid.generate();
+    let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
+
+    let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
+    console.log(userExist);
+
+    await this.codigoVerificacionRepository.create(bodyCode);
+
+    return verificationCode;
+  }
 }
 
 

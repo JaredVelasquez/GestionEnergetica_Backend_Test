@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core/dist';
 import {
   Count,
@@ -27,6 +28,7 @@ export class InvoicesController {
   ) { }
 
 
+  @authenticate('admin', 'owner', 'viewer')
   @post('/facturas')
   @response(200, {
     description: 'Crear factura y factura detalle',

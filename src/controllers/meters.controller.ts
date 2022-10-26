@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -106,6 +107,7 @@ export class MetersController {
     return this.medidorRepository.findById(id, filter);
   }
 
+  @authenticate('admin', 'owner')
   @patch('/medidors/{id}')
   @response(204, {
     description: 'Medidor PATCH success',

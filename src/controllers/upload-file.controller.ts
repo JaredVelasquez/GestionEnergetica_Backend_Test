@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core/dist';
 import {
   get, HttpErrors,
@@ -16,6 +17,7 @@ import {FileUploadHandler} from '../core/library/types';
 
 const readdir = promisify(fs.readdir);
 
+@authenticate('admin', 'owner')
 export class FileUploadController {
   /**
    * Constructor

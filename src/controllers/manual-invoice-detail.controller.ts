@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -26,6 +27,7 @@ export class ManualInvoiceDetailController {
     public facturaManualRepository: FacturaManualRepository,
   ) { }
 
+  @authenticate('admin', 'owner')
   @post('/detalle-factura-manuals-custom')
   @response(200, {
     description: 'Usuario model instance',

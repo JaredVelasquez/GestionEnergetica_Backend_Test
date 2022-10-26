@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -15,6 +16,7 @@ import {viewOf} from '../core/library/views.library';
 import {RegistroManual} from '../models';
 import {MedidorRepository, RegistroManualRepository, VariablesRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class ManualRegistrationController {
   constructor(
     @repository(RegistroManualRepository)

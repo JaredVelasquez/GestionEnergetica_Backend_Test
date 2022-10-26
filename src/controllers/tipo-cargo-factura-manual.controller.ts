@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {TipoCargoFacturaManual} from '../models';
 import {TipoCargoFacturaManualRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class TipoCargoFacturaManualController {
   constructor(
     @repository(TipoCargoFacturaManualRepository)
-    public tipoCargoFacturaManualRepository : TipoCargoFacturaManualRepository,
-  ) {}
+    public tipoCargoFacturaManualRepository: TipoCargoFacturaManualRepository,
+  ) { }
 
   @post('/tipo-cargo-factura-manuals')
   @response(200, {

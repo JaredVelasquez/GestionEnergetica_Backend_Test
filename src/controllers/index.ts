@@ -1,17 +1,24 @@
 export * from './actores.controller';
 export * from './auth.controller';
 export * from './contract-meter.controller';
+export * from './contract-type.controller';
 export * from './contracts.controller';
 export * from './especial-charges.controller';
+export * from './factura-manual.controller';
+export * from './formulation.controller';
 export * from './invoice-datail.controller';
 export * from './invoices.controller';
+export * from './manual-invoice-detail.controller';
 export * from './manual-registration.controller';
 export * from './measuring-point.controller';
 export * from './meters.controller';
+export * from './notify.controller';
 export * from './rate-param-detail.controller';
 export * from './rate-parameters.controller';
 export * from './rates.controller';
+export * from './rol.controller';
 export * from './roll-over.controller';
+export * from './tipo-cargo-factura-manual.controller';
 export * from './type-charge.controller';
 export * from './upload-file.controller';
 export * from './variable.controller';
@@ -19,9 +26,5 @@ export * from './virtual-meter-detail.controller';
 export * from './virtual-meter.controller';
 export * from './zona.controller';
 
-export * from './factura-manual.controller';
-export * from './tipo-cargo-factura-manual.controller';
-export * from './manual-invoice-detail.controller';
-export * from './formulation.controller';
-export * from './notify.controller';
-export * from './contract-type.controller';
+
+export * from './user.controller';

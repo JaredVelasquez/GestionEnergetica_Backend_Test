@@ -10,6 +10,9 @@ export class EstrategyService {
   autheticate = async (decodedToken: token, role: number) => {
 
     const {UserID, UserNAME, Role} = decodedToken.data;
+    if (decodedToken.exp < Date.now()) {
+      throw new HttpErrors[401]("Sesion expirada.")
+    }
     if (decodedToken) {
       if (Role == role) {
         const profile: UserProfile = Object.assign({
@@ -17,8 +20,11 @@ export class EstrategyService {
           username: UserNAME,
           role: Role,
         });
+        console.log(profile);
+
         return profile;
       } else {
+
         throw new HttpErrors[401](
           'El token es válido, pero no tiene los permisos suficientes para ejecutar esta acción.',
         );

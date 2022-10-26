@@ -1,5 +1,5 @@
 export interface token {
-  exp: Date,
+  exp: number,
   data: {
     UserID: number,
     UserNAME: string,

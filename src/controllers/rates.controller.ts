@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -15,6 +16,7 @@ import {viewOf} from '../core/library/views.library';
 import {Tarifa} from '../models';
 import {TarifaParametroDetalleRepository, TarifaRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class RatesController {
   constructor(
     @repository(TarifaRepository)

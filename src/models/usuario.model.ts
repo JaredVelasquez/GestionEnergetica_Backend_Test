@@ -59,7 +59,7 @@ export class Usuario extends Entity {
     length: 150,
     mssql: {columnName: 'Correo', dataType: 'varchar', dataLength: 150, dataPrecision: null, dataScale: null, nullable: 'YES'},
   })
-  correo?: string;
+  correo: string;
 
   @property({
     type: 'number',

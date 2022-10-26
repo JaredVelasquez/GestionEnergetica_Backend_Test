@@ -1,14 +1,18 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {post, requestBody} from '@loopback/rest';
 import {CodigoVerificacionRepository, CredencialesRepository} from '../repositories';
-import {NotifyService} from '../services';
+import {JWTService, NotifyService} from '../services';
 var shortid = require('shortid-36');
 
+@authenticate.skip()
 export class NotifyController {
   constructor(
     @service()
     private notify: NotifyService,
+    @service(JWTService)
+    private jwt: JWTService,
     @repository(CredencialesRepository)
     private credentialsRepository: CredencialesRepository,
     @repository(CodigoVerificacionRepository)
@@ -36,13 +40,7 @@ export class NotifyController {
       }
       console.log(userExist);
 
-      let verificationCode: string = shortid.generate();
-      let expTIME = new Date((Date.now() + (1000 * 120))).toISOString();
-
-      let bodyCode = {userId: userExist.id, codigo: verificationCode, exp: expTIME, }
-      console.log(userExist);
-
-      await this.codigoVerificacionRepository.create(bodyCode);
+      let verificationCode: string = await this.jwt.generateCode(userExist);
       await this.notify.EmailNotification(userExist.correo, `${identi.subject}`, `${identi.text} ${verificationCode}`);
 
     }

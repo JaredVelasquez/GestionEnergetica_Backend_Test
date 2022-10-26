@@ -81,6 +81,7 @@ export interface ContractMeter {
   Direccion: string,
   Telefono: string,
   correo: string,
+  Imagen: string
   tipo: boolean,
   funcionalidad: number,
 }
@@ -105,7 +106,8 @@ export interface LecturasPorContrato {
     diaGeneracion: number,
     direccion: string,
     telefono: string,
-    correo: string
+    correo: string,
+    logo: string,
   },
   cargo?:
   [
@@ -123,6 +125,7 @@ export interface LecturasPorContrato {
       ConsumoInterno: number,
       LecturaReactiva: number,
       LecturaActivaExportada: number,
+      cargoReactivo: boolean,
       descripcion: string,
       CEF: number,
       PCF: number,
@@ -173,6 +176,7 @@ export interface LecturasPorContrato {
   PBE: number,
   ECR: number,
   ESG: number,
+  cargoReactivo: boolean,
   ModoCalculoSolar: boolean,
   diasFacturados: number,
 
@@ -233,8 +237,8 @@ export class FormulationService {
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
 
-    // console.log(historicoMedidorConsumo);
-    let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosClientes, PBE, generateInvoice);
+    let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosClientes, PBE, generateInvoice,
+      facturaEEHVigente[0].cargoReactivo === 0 ? false : true);
 
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.lecturasDespuesDeAjustes(lecturasMedidoresPorContrato);
@@ -1079,7 +1083,7 @@ export class FormulationService {
   }
 
 
-  async identifyMetersOnContract(lecturasMedidores: MedidorSelect[], listadoContratosMedidor: ContractMeter[], PBE: number, generateInvoice: GenerateInvoice) {
+  async identifyMetersOnContract(lecturasMedidores: MedidorSelect[], listadoContratosMedidor: ContractMeter[], PBE: number, generateInvoice: GenerateInvoice, cargoReactivo: boolean) {
 
 
     let LecturasResultantes: LecturasPorContrato[] = [];
@@ -1103,6 +1107,7 @@ export class FormulationService {
                   LecturaActivaExportada: 0,
                   ConsumoExterno: lecturasMedidores[i].totalLecturaActiva,
                   ConsumoInterno: 0,
+                  cargoReactivo: cargoReactivo,
                   PPPT: 0,
                   CEF: 0,
                   PCF: 0,
@@ -1146,7 +1151,8 @@ export class FormulationService {
                 diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
                 direccion: listadoContratosMedidor[j].Direccion,
                 telefono: listadoContratosMedidor[j].Telefono,
-                correo: listadoContratosMedidor[j].correo
+                correo: listadoContratosMedidor[j].correo,
+                logo: listadoContratosMedidor[j].Imagen
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,
@@ -1157,6 +1163,7 @@ export class FormulationService {
                 LecturaActivaExportada: 0,
                 ConsumoExterno: lecturasMedidores[i].totalLecturaActiva,
                 ConsumoInterno: 0,
+                cargoReactivo: cargoReactivo,
                 PPPT: 0,
                 CEF: 0,
                 PCF: 0,
@@ -1194,6 +1201,7 @@ export class FormulationService {
               ESG: 0,
               ECR: 0,
               totalEnergiaDeInyeccionConsumida: 0,
+              cargoReactivo: cargoReactivo,
               ModoCalculoSolar: false,
               diasFacturados: (Date.parse(generateInvoice.fechaFinal) - Date.parse(generateInvoice.fechaInicial)) / ((900000 * 4) * 24),
             });
@@ -1213,6 +1221,7 @@ export class FormulationService {
                   LecturaActivaExportada: 0,
                   ConsumoExterno: lecturasMedidores[i].totalLecturaActiva,
                   ConsumoInterno: 0,
+                  cargoReactivo: cargoReactivo,
                   PPPT: 0,
                   CEF: 0,
                   PCF: 0,
@@ -1255,7 +1264,8 @@ export class FormulationService {
                 diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
                 direccion: listadoContratosMedidor[j].Direccion,
                 telefono: listadoContratosMedidor[j].Telefono,
-                correo: listadoContratosMedidor[j].correo
+                correo: listadoContratosMedidor[j].correo,
+                logo: listadoContratosMedidor[j].Imagen
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,
@@ -1266,6 +1276,7 @@ export class FormulationService {
                 LecturaActivaExportada: 0,
                 ConsumoExterno: lecturasMedidores[i].totalLecturaActiva,
                 ConsumoInterno: 0,
+                cargoReactivo: cargoReactivo,
                 PPPT: 0,
                 CEF: 0,
                 PCF: 0,
@@ -1304,6 +1315,7 @@ export class FormulationService {
               ESG: 0,
               ECR: 0,
               ModoCalculoSolar: false,
+              cargoReactivo: cargoReactivo,
               diasFacturados: (Date.parse(generateInvoice.fechaFinal) - Date.parse(generateInvoice.fechaInicial)) / ((900000 * 4) * 24),
             });
 
@@ -1322,6 +1334,7 @@ export class FormulationService {
                   LecturaReactiva: 0,
                   ConsumoExterno: 0,
                   ConsumoInterno: 0,
+                  cargoReactivo: cargoReactivo,
                   PPPT: 0,
                   CEF: 0,
                   PCF: 0,
@@ -1363,7 +1376,8 @@ export class FormulationService {
                 diaGeneracion: listadoContratosMedidor[j].diaGeneracion,
                 direccion: listadoContratosMedidor[j].Direccion,
                 telefono: listadoContratosMedidor[j].Telefono,
-                correo: listadoContratosMedidor[j].correo
+                correo: listadoContratosMedidor[j].correo,
+                logo: listadoContratosMedidor[j].Imagen
               },
               medidor: [{
                 sourceID: lecturasMedidores[i].sourceId,
@@ -1374,6 +1388,7 @@ export class FormulationService {
                 LecturaReactiva: 0,
                 ConsumoExterno: 0,
                 ConsumoInterno: 0,
+                cargoReactivo: cargoReactivo,
                 PPPT: 0,
                 CEF: 0,
                 PCF: 0,
@@ -1412,6 +1427,7 @@ export class FormulationService {
               ESG: 0,
               ECR: 0,
               ModoCalculoSolar: false,
+              cargoReactivo: cargoReactivo,
               diasFacturados: (Date.parse(generateInvoice.fechaFinal) - Date.parse(generateInvoice.fechaInicial)) / ((900000 * 4) * 24),
             });
 

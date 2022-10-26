@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Variables} from '../models';
 import {VariablesRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class VariableController {
   constructor(
     @repository(VariablesRepository)
-    public variablesRepository : VariablesRepository,
-  ) {}
+    public variablesRepository: VariablesRepository,
+  ) { }
 
   @post('/variables')
   @response(200, {

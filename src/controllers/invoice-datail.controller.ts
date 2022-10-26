@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {DetalleFactura} from '../models';
 import {DetalleFacturaRepository} from '../repositories';
 
+@authenticate('admin', 'owner', 'viewer')
 export class InvoiceDatailController {
   constructor(
     @repository(DetalleFacturaRepository)
-    public detalleFacturaRepository : DetalleFacturaRepository,
-  ) {}
+    public detalleFacturaRepository: DetalleFacturaRepository,
+  ) { }
 
   @post('/detalle-facturas')
   @response(200, {

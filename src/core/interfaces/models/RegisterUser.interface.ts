@@ -8,3 +8,14 @@ export interface RegisterUserInterface {
   password: string;
   phoneNumber: string;
 }
+
+export interface credentialShema {
+  correo: string,
+  username: string,
+  newPassword: string,
+}
+
+export interface resetPassword {
+  user: number,
+  newPassword: string
+}

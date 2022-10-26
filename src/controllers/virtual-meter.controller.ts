@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {
   Count,
@@ -18,6 +19,7 @@ import {MedidorVirtual} from '../models';
 import {MedidorVirtualRepository} from '../repositories';
 import {MeterService} from '../services';
 
+@authenticate('admin', 'owner')
 export class VirtualMeterController {
   constructor(
     @repository(MedidorVirtualRepository)

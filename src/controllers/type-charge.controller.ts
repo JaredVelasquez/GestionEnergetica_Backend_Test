@@ -1,30 +1,26 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {TipoCargo} from '../models';
 import {TipoCargoRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class TypeChargeController {
   constructor(
     @repository(TipoCargoRepository)
-    public tipoCargoRepository : TipoCargoRepository,
-  ) {}
+    public tipoCargoRepository: TipoCargoRepository,
+  ) { }
 
   @post('/tipo-cargos')
   @response(200, {
