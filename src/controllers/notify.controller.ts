@@ -1,4 +1,3 @@
-import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {post, requestBody} from '@loopback/rest';
@@ -6,7 +5,6 @@ import {CodigoVerificacionRepository, CredencialesRepository} from '../repositor
 import {JWTService, NotifyService} from '../services';
 var shortid = require('shortid-36');
 
-@authenticate.skip()
 export class NotifyController {
   constructor(
     @service()

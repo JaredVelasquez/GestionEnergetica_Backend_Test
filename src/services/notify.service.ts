@@ -10,14 +10,16 @@ export class NotifyService {
     var mailOptions: any;
     var transporter = nodemailer.createTransport({
       service: 'outlook',
+      port: 587,
+      secure: false,
       auth: {
-        user: 'jared.vealsquez@outlook.com',
-        pass: '123soleado'
+        user: 'JaredVelasquez@unitec.edu',
+        pass: 'Jaredykaren18'
       }
     });
     if (atachment) {
       mailOptions = {
-        from: 'jared.vealsquez@outlook.com',
+        from: 'JaredVelasquez@unitec.edu',
         to: `${email}`,
         subject: `${subject}`,
         text: `${content}`,
@@ -30,7 +32,7 @@ export class NotifyService {
 
     } else {
       mailOptions = {
-        from: 'jared.vealsquez@outlook.com',
+        from: 'JaredVelasquez@unitec.edu',
         to: `${email}`,
         subject: `${subject}`,
         text: `${content}`,
