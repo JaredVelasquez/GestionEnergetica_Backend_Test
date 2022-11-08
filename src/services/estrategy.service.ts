@@ -20,7 +20,6 @@ export class EstrategyService {
           username: UserNAME,
           role: Role,
         });
-        console.log(profile);
 
         return profile;
       } else {

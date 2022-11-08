@@ -223,19 +223,24 @@ export class FormulationService {
     let facturaEEHVigente = await this.searchValidInvoice(generateInvoice);
 
     lecturasEnergiaActiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaActiva, medidores);
-    // console.log(lecturasEnergiaActiva);
+    //console.log(lecturasEnergiaActiva);
 
     lecturasEnergiaReactiva = await this.getAllMetersIONDATA(generateInvoice, EnergiaReactiva, medidores);
 
     lecturasEnergiaActivaExportada = await this.getAllMetersIONDATA(generateInvoice, Exportada, medidores);
+    //console.log(lecturasEnergiaActivaExportada);
 
     // console.log("-----------------------------------------------------------------------------------");
 
     let contratosClientes = await this.metersOnContract(hoy, cliente);
+    //console.log(contratosClientes);
+
     let contratosProveedorExterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorExterno);
 
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
+
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
+    //console.log(historicoMedidorConsumo);
 
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosClientes, PBE, generateInvoice,
       facturaEEHVigente[0].cargoReactivo === 0 ? false : true);
@@ -409,7 +414,11 @@ export class FormulationService {
     for (let i = 0; i < ListaMedidores.length; i++) {
       let lecturaReemplazo!: ION_Data;
       let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
-        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`,
+        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID}
+        and sourceID != 32 and sourceID != 33 and sourceID != 34
+        and sourceID != 35  and sourceID != 36  and sourceID != 37
+        and sourceID != 38  and sourceID != 39  and sourceID != 40
+        and sourceID != 41  and sourceID != 42  and sourceID != 43  ORDER BY sourceName ASC`,
       );
 
       for (let j = 0; j < historicoLecturasPorMedidor.length; j++) {
@@ -1005,7 +1014,9 @@ export class FormulationService {
 
       let resultadoRollOver = await this.identifyRollOvers(lecturasEnergiaActiva[j + 1], lecturasEnergiaActiva[j], lecturasEnergiaReactiva[j], lecturasEnergiaReactiva[j + 1], lecturasEnergiaActivaExportada[j], lecturasEnergiaActivaExportada[j + 1]);
 
-      if (lecturasEnergiaActiva[j].sourceID === medidores[i].ID && lecturasEnergiaReactiva[j].sourceID === medidores[i].ID) {
+      if (lecturasEnergiaActiva[j].sourceID === medidores[i].ID) {
+        console.log(lecturasEnergiaActiva[j].sourceID);
+
         historicoMedidorConsumo.push(
           {
             sourceId: lecturasEnergiaActiva[j].sourceID,
@@ -1037,7 +1048,9 @@ export class FormulationService {
 
     for (let i = 0; i < historicoMedidorConsumo.length; i++) {
       for (let j = 0; j < lecturasEnergiaActivaExportada.length; j += 2) {
+
         if (lecturasEnergiaActivaExportada[j].sourceID === medidores[i].ID) {
+
           historicoMedidorConsumo[i].lecturaActivaExportada = (lecturasEnergiaActivaExportada[j + 1].Value - lecturasEnergiaActivaExportada[j].Value);
           historicoMedidorConsumo[i].lecturaActivaExportada = (lecturasEnergiaActivaExportada[j + 1].Value - lecturasEnergiaActivaExportada[j].Value);
         } else {
