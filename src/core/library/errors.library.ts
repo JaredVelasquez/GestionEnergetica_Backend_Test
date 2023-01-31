@@ -10,4 +10,5 @@ export namespace error {
   export const EMTY_CREDENTIALS: errorIn = {id: -7, content: 'Credenciales vacias.', solution: 'Rellene los campos necesarios'};
   export const INVALID_IMAGE_FORMAT: errorIn = {id: -8, content: 'Formato de imagen no permitido.', solution: 'Seleccione una imagen formato .PNG, .JPG, .JPEG, .SVG'};
   export const TOKEN_ALREADY_EXPIRED: errorIn = {id: -9, content: 'Sesion caducada.', solution: 'Inicie sesion nuevamente'};
+  export const DISABLE_USER: errorIn = {id: -9, content: 'Este usuario de encuentra deshabilitado.', solution: 'Constacte a soporte tecnico'};
 }

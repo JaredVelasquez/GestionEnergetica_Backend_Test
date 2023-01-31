@@ -93,6 +93,26 @@ export interface CargosFacturaEEH {
   estado: boolean
 }
 
+export interface Medidor {
+  id: number,
+  sourceId: number,
+  codigo: string,
+  descripcion: string,
+  modelo: string,
+  serie: string,
+  multiplicador: number,
+  lecturaMax: number,
+  puntoMedicion: number,
+  observacion: string,
+  puntoConexion: number,
+  tipo: boolean,
+  registroDatos: boolean,
+  almacenamientoLocal: boolean,
+  funcionalidad: number,
+  estado: boolean
+
+}
+
 export interface LecturasPorContrato {
 
   contrato: {
@@ -216,7 +236,7 @@ export class FormulationService {
     }
 
     let hoy = new Date().toISOString();
-    let medidores = await this.getSource();
+    let medidores: Medidor[] = await this.getSource();
 
     PBE = await this.ObtenerTarifaVigente(1, generateInvoice, tarifaEnergiaExterna);
 
@@ -240,7 +260,6 @@ export class FormulationService {
     let contratosProveedorInterno: ContractMeter[] = await this.metersOnContract(hoy, proveedorInterno);
 
     historicoMedidorConsumo = await this.LecturasAjustadas(lecturasEnergiaActiva, lecturasEnergiaReactiva, lecturasEnergiaActivaExportada, medidores);
-    //console.log(historicoMedidorConsumo);
 
     let lecturasMedidoresPorContrato = await this.identifyMetersOnContract(historicoMedidorConsumo, contratosClientes, PBE, generateInvoice,
       facturaEEHVigente[0].cargoReactivo === 0 ? false : true);
@@ -248,12 +267,21 @@ export class FormulationService {
     lecturasMedidoresPorContrato = await this.aplyVirtualMeters(lecturasMedidoresPorContrato);
     lecturasMedidoresPorContrato = await this.lecturasDespuesDeAjustes(lecturasMedidoresPorContrato);
 
+    for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
+      lecturasMedidoresPorContrato[i].totalEnergiaFotovoltaicaActivaConsumida = 0;
+      for (let j = 0; j < lecturasMedidoresPorContrato[i].medidor.length; j++) {
+        if (lecturasMedidoresPorContrato[i].medidor[j].funcionalidad === 1) {
+          lecturasMedidoresPorContrato[i].totalEnergiaFotovoltaicaActivaConsumida += lecturasMedidoresPorContrato[i].medidor[j].LecturaActiva;
+        }
+      }
+    }
     let lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActiva, MedidorFronteraSourceID);
     ECR = await this.LecturasMedidorFrontera(historicoMedidorConsumo, EnergiaActiva, lecturasManuales, contratosProveedorExterno, 0);
     lecturasManuales = await this.ObetenerLecturasManualesPorFecha(generateInvoice.fechaInicial, generateInvoice.fechaFinal, EnergiaActivaExportada, MedidorFronteraSourceID);
     EXR = await this.LecturasMedidorFrontera(historicoMedidorConsumo, EnergiaActivaExportada, lecturasManuales, contratosProveedorExterno, 0);
-    ESG = await this.SumaEnergiaDeMedidores(contratosProveedorInterno, historicoMedidorConsumo, 1);
+    ESG = await this.SumaEnergiaDeMedidores(contratosProveedorInterno, lecturasMedidoresPorContrato, 1);
     let ESIR = await this.SumaEnergiasExportadas(contratosProveedorInterno, lecturasEnergiaActivaExportada, 2);
+
     ETCR = ECR + ESG;
 
     if (!ECR && generateInvoice.facturaEEH === true) {
@@ -261,8 +289,6 @@ export class FormulationService {
     }
 
     ETCE = await this.energiaActivaConsumidaPorClientes(lecturasMedidoresPorContrato);
-    ETCE -= ESG + ESIR;
-    ESG -= ESIR;
     EAC = ESG - EXR;
     FS = EAC / (ECR + EAC);
     ETO = EAC + ECR;
@@ -338,6 +364,7 @@ export class FormulationService {
   }
 
   async PorcentajeParticipacionEnConsumoNeto(ETCE: number, lecturasMedidoresPorContrato: LecturasPorContrato[], PPT: number, ECR: number, ESG: number) {
+    console.log("ETCE: " + ETCE);
 
     for (let i = 0; i < lecturasMedidoresPorContrato.length; i++) {
       for (let j = 0; j < lecturasMedidoresPorContrato[i].medidor.length; j++) {
@@ -393,7 +420,7 @@ export class FormulationService {
 
   async getSource() {
     return await this.facturaManualRepository.dataSource.execute(
-      `${viewOf.GET_SOURCE}`,
+      `${viewOf.GET_SOURCE_TEST}`,
     );
 
 
@@ -405,7 +432,7 @@ export class FormulationService {
     );
   }
 
-  async getAllMetersIONDATA(generateInvoice: GenerateInvoice, quantityID: number, ListaMedidores: ION_Data_Source[]) {
+  async getAllMetersIONDATA(generateInvoice: GenerateInvoice, quantityID: number, ListaMedidores: Medidor[]) {
     let historicoLecturas: Array<ION_Data> = [];
     let lecturaTemporalInicial: Array<ION_Data> = [], lecturaTemporalFinal: Array<ION_Data> = [];
     let posicionInicial: number = 1, lecturaTemporal: number = 0, posicionBuscada: number = 0;
@@ -413,12 +440,10 @@ export class FormulationService {
 
     for (let i = 0; i < ListaMedidores.length; i++) {
       let lecturaReemplazo!: ION_Data;
+
       let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
-        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].ID}
-        and sourceID != 32 and sourceID != 33 and sourceID != 34
-        and sourceID != 35  and sourceID != 36  and sourceID != 37
-        and sourceID != 38  and sourceID != 39  and sourceID != 40
-        and sourceID != 41  and sourceID != 42  and sourceID != 43  ORDER BY sourceName ASC`,
+        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaInicial}') or TimestampUTC =  dateadd(hour,6,'${generateInvoice.fechaFinal}')) and quantityID = ${quantityID}  and sourceID = ${ListaMedidores[i].sourceId}
+          ORDER BY sourceName ASC`,
       );
 
       for (let j = 0; j < historicoLecturasPorMedidor.length; j++) {
@@ -431,10 +456,10 @@ export class FormulationService {
 
               if (direccion < 0) {
                 if (lecturaTemporalFinal.length < 1) {
-                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].sourceId} ORDER BY sourceName ASC`);
                 }
                 if (lecturaTemporalInicial.length < 1) {
-                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaInicial}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].sourceId} ORDER BY sourceName ASC`);
 
                 }
                 if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
@@ -445,10 +470,10 @@ export class FormulationService {
 
               } else {
                 if (lecturaTemporalFinal.length < 1) {
-                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                  lecturaTemporalFinal = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, ${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID} and Value IS NOT NULL and sourceID = ${ListaMedidores[i].sourceId} ORDER BY sourceName ASC`);
                 }
                 if (lecturaTemporalInicial.length < 1) {
-                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].ID} ORDER BY sourceName ASC`);
+                  lecturaTemporalInicial = await this.facturaManualRepository.dataSource.execute(`${viewOf.GET_ALL_IONDATA} where (TimestampUTC =  dateadd(hour,+6, dateadd(MINUTE, -${15 * cantidadCiclos},'${generateInvoice.fechaFinal}'))) and quantityID = ${quantityID}  and Value IS NOT NULL   and sourceID = ${ListaMedidores[i].sourceId} ORDER BY sourceName ASC`);
 
                 }
                 if (lecturaTemporalInicial.length > 0 && lecturaTemporalFinal.length > 0) {
@@ -503,17 +528,17 @@ export class FormulationService {
 
   }
 
-  async ObtenerLecturaEquivalente(quantityID: number, medidor: ION_Data_Source, fechaFaltante: string) {
+  async ObtenerLecturaEquivalente(quantityID: number, medidor: Medidor, fechaFaltante: string) {
 
     let historicoLecturasPorMedidor: Array<ION_Data> = await this.facturaManualRepository.dataSource.execute(
-      `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN  dateadd(hour,6, dateadd(DAY, -30, '${fechaFaltante}')) and dateadd(hour,6,'${fechaFaltante}')) and quantityID = ${quantityID}  and sourceID = ${medidor.ID} ORDER BY Fecha ASC`,
+      `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN  dateadd(hour,6, dateadd(DAY, -30, '${fechaFaltante}')) and dateadd(hour,6,'${fechaFaltante}')) and quantityID = ${quantityID}  and sourceID = ${medidor.sourceId} ORDER BY Fecha ASC`,
     );
     if (historicoLecturasPorMedidor.length > 0) {
       return historicoLecturasPorMedidor[historicoLecturasPorMedidor.length - 1];
     }
     if (historicoLecturasPorMedidor.length == 0) {
       historicoLecturasPorMedidor = await this.facturaManualRepository.dataSource.execute(
-        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN dateadd(hour,6,'${fechaFaltante}') and dateadd(hour,6, dateadd(DAY, 30, '${fechaFaltante}'))) and quantityID = ${quantityID}  and sourceID = ${medidor.ID} ORDER BY Fecha ASC`,
+        `${viewOf.GET_ALL_IONDATA} where (TimestampUTC BETWEEN dateadd(hour,6,'${fechaFaltante}') and dateadd(hour,6, dateadd(DAY, 30, '${fechaFaltante}'))) and quantityID = ${quantityID}  and sourceID = ${medidor.sourceId} ORDER BY Fecha ASC`,
       );
     }
     if (historicoLecturasPorMedidor.length > 0) {
@@ -532,13 +557,13 @@ export class FormulationService {
     return 15;
   }
 
-  async GenerarlecturaTemporal(quantityID: number, medidor: ION_Data_Source, cantidadCiclos: number, direccion: number, lecturaTemporalInicial: ION_Data, lecturaTemporalFinal: ION_Data, fechaB: string, fechaO: string) {
+  async GenerarlecturaTemporal(quantityID: number, medidor: Medidor, cantidadCiclos: number, direccion: number, lecturaTemporalInicial: ION_Data, lecturaTemporalFinal: ION_Data, fechaB: string, fechaO: string) {
     let lecturaTemporal: ION_Data, posicionBuscada = 0;
 
     lecturaTemporal = {
-      sourceID: medidor.ID,
+      sourceID: medidor.sourceId,
       TimestampUTC: "",
-      sourceName: medidor.Descripcion,
+      sourceName: medidor.descripcion,
       quantityID: quantityID,
       quantityName: "",
       dataLog2ID: "",
@@ -740,7 +765,9 @@ export class FormulationService {
 
         if (rollOver[c].energia === 2 && rollOver[c].estado === true) {
           if (Date.parse(rollOver[c].fechaInicial) <= Date.parse(lecturasEnergiaActivaExportadaFinal.Fecha) && Date.parse(rollOver[c].fechaInicial) >= Date.parse(lecturasEnergiaActivaExportadaInicial.Fecha) && medidorIdentificado?.id === rollOver[c].medidorId) {
-            //console.log(lecturasEnergiaReactivaFinal.Value + ' + ' + lecturasEnergiaReactivaInicial.Value + ' = ');
+            console.log("entreeee");
+
+
             consumoActivoExportado += rollOver[c].lecturaNueva - rollOver[c].lecturaAnterior;
             consumoActivoExportado *= medidorIdentificado?.multiplicador || 1;
           }
@@ -1003,53 +1030,90 @@ export class FormulationService {
 
   }
 
-  async LecturasAjustadas(lecturasEnergiaActiva: ION_Data[], lecturasEnergiaReactiva: ION_Data[], lecturasEnergiaActivaExportada: ION_Data[], medidores: any) {
+  async LecturasAjustadas(lecturasEnergiaActiva: ION_Data[], lecturasEnergiaReactiva: ION_Data[], lecturasEnergiaActivaExportada: ION_Data[], medidores: Medidor[]) {
     let i = 0;
+    let expInicial: ION_Data;
+    let expInicialFinal: ION_Data;
     let historicoMedidorConsumo: Array<MedidorSelect> = [];
-
     for (let j = 0; j < lecturasEnergiaActiva.length; j += 2) {
-
-      let auxActiva = lecturasEnergiaActiva[j + 1].Value;
-      let auxReactiva = lecturasEnergiaReactiva[j + 1].Value;
-
-      let resultadoRollOver = await this.identifyRollOvers(lecturasEnergiaActiva[j + 1], lecturasEnergiaActiva[j], lecturasEnergiaReactiva[j], lecturasEnergiaReactiva[j + 1], lecturasEnergiaActivaExportada[j], lecturasEnergiaActivaExportada[j + 1]);
-
-      if (lecturasEnergiaActiva[j].sourceID === medidores[i].ID) {
-        console.log(lecturasEnergiaActiva[j].sourceID);
-
-        historicoMedidorConsumo.push(
-          {
-            sourceId: lecturasEnergiaActiva[j].sourceID,
-            descripcion: resultadoRollOver.descripcion,
-            sourceName: lecturasEnergiaActiva[j].sourceName,
-            quantityID: lecturasEnergiaActiva[0].quantityID,
-            totalLecturaActiva: resultadoRollOver.LecturaActivaFinal,
-            totalLecturaReactiva: resultadoRollOver.LecturaReactivaFinal,
-            lecturaActivaActual: resultadoRollOver.lecturaActivaActual,
-            lecturaActivaAnterior: resultadoRollOver.lecturaActivaAnterior,
-            lecturaReactivaActual: resultadoRollOver.lecturaReactivaActual,
-            lecturaReactivaAnterior: resultadoRollOver.lecturaReactivaAnterior,
-            lecturaActivaExportada: 0,
-            lecturaActivaExportadaActual: 0,
-            lecturaActivaExportadaAnterior: 0,
-            fechaActual: lecturasEnergiaActiva[j + 1].Fecha,
-            fechaAnterior: lecturasEnergiaActiva[j].Fecha,
-            multiplicador: resultadoRollOver.multiplicador || 1,
-          }
-        );
+      expInicial = {
+        Fecha: lecturasEnergiaActiva[j].Fecha,
+        dataLog2ID: lecturasEnergiaActiva[j].dataLog2ID,
+        quantityID: lecturasEnergiaActiva[j].quantityID,
+        quantityName: lecturasEnergiaActiva[j].quantityName,
+        sourceID: lecturasEnergiaActiva[j].sourceID,
+        sourceName: lecturasEnergiaActiva[j].sourceName,
+        TimestampUTC: lecturasEnergiaActiva[j].TimestampUTC,
+        Value: 0,
+      }
+      expInicialFinal = {
+        Fecha: lecturasEnergiaActiva[j + 1].Fecha,
+        dataLog2ID: lecturasEnergiaActiva[j + 1].dataLog2ID,
+        quantityID: lecturasEnergiaActiva[j + 1].quantityID,
+        quantityName: lecturasEnergiaActiva[j + 1].quantityName,
+        sourceID: lecturasEnergiaActiva[j + 1].sourceID,
+        sourceName: lecturasEnergiaActiva[j + 1].sourceName,
+        TimestampUTC: lecturasEnergiaActiva[j + 1].TimestampUTC,
+        Value: 0,
       }
 
 
+      let auxActiva = lecturasEnergiaActiva[j + 1].Value;
+      let auxReactiva = lecturasEnergiaReactiva[j + 1].Value;
+      let activaexpIni = expInicial;
+      let activaexpFin = expInicialFinal;
 
-      lecturasEnergiaActiva[j + 1].Value = auxActiva;
-      lecturasEnergiaReactiva[j + 1].Value = auxReactiva;
-      i++;
+      for (let i = 0; i < lecturasEnergiaActivaExportada.length; i++) {
+        if (lecturasEnergiaActivaExportada[i].sourceID == lecturasEnergiaActiva[j].sourceID && lecturasEnergiaActivaExportada[i].Fecha == lecturasEnergiaActiva[j].Fecha) {
+          activaexpIni.Value = lecturasEnergiaActivaExportada[i].Value;
+        }
+        if (lecturasEnergiaActivaExportada[i].sourceID == lecturasEnergiaActiva[j + 1].sourceID && lecturasEnergiaActivaExportada[i].Fecha == lecturasEnergiaActiva[j + 1].Fecha) {
+          expInicialFinal.Value = lecturasEnergiaActivaExportada[i].Value;
+        }
+      }
+
+      let resultadoRollOver = await this.identifyRollOvers(lecturasEnergiaActiva[j + 1], lecturasEnergiaActiva[j], lecturasEnergiaReactiva[j], lecturasEnergiaReactiva[j + 1], activaexpIni, activaexpFin);
+      console.log(resultadoRollOver);
+
+      for (let i = 0; i < medidores.length; i++) {
+        if (lecturasEnergiaActiva[j].sourceID === medidores[i].sourceId) {
+          //console.log(lecturasEnergiaActiva[j].sourceID);
+
+          historicoMedidorConsumo.push(
+            {
+              sourceId: lecturasEnergiaActiva[j].sourceID,
+              descripcion: resultadoRollOver.descripcion,
+              sourceName: lecturasEnergiaActiva[j].sourceName,
+              quantityID: lecturasEnergiaActiva[0].quantityID,
+              totalLecturaActiva: resultadoRollOver.LecturaActivaFinal,
+              totalLecturaReactiva: resultadoRollOver.LecturaReactivaFinal,
+              lecturaActivaActual: resultadoRollOver.lecturaActivaActual,
+              lecturaActivaAnterior: resultadoRollOver.lecturaActivaAnterior,
+              lecturaReactivaActual: resultadoRollOver.lecturaReactivaActual,
+              lecturaReactivaAnterior: resultadoRollOver.lecturaReactivaAnterior,
+              lecturaActivaExportada: resultadoRollOver.LecturaActivaExportadaFinal,
+              lecturaActivaExportadaActual: resultadoRollOver.lecturaActivaExportadaActual,
+              lecturaActivaExportadaAnterior: resultadoRollOver.lecturaActivaExportadaAnterior,
+              fechaActual: lecturasEnergiaActiva[j + 1].Fecha,
+              fechaAnterior: lecturasEnergiaActiva[j].Fecha,
+              multiplicador: resultadoRollOver.multiplicador || 1,
+            }
+          );
+        }
+
+
+
+        lecturasEnergiaActiva[j + 1].Value = auxActiva;
+        lecturasEnergiaReactiva[j + 1].Value = auxReactiva;
+
+      }
+
     }
 
     for (let i = 0; i < historicoMedidorConsumo.length; i++) {
       for (let j = 0; j < lecturasEnergiaActivaExportada.length; j += 2) {
 
-        if (lecturasEnergiaActivaExportada[j].sourceID === medidores[i].ID) {
+        if (lecturasEnergiaActivaExportada[j].sourceID === historicoMedidorConsumo[i].sourceId && historicoMedidorConsumo[i].lecturaActivaExportada == 0) {
 
           historicoMedidorConsumo[i].lecturaActivaExportada = (lecturasEnergiaActivaExportada[j + 1].Value - lecturasEnergiaActivaExportada[j].Value);
           historicoMedidorConsumo[i].lecturaActivaExportada = (lecturasEnergiaActivaExportada[j + 1].Value - lecturasEnergiaActivaExportada[j].Value);
@@ -1458,20 +1522,16 @@ export class FormulationService {
     return LecturasResultantes;
   }
 
-  async SumaEnergiaDeMedidores(listaMedidores: ContractMeter[], LecturasPorMedidor: MedidorSelect[], tipoMedidor: number) {
+  async SumaEnergiaDeMedidores(listaMedidores: ContractMeter[], LecturasPorMedidor: LecturasPorContrato[], tipoMedidor: number) {
     let TotalEnergia = 0;
     //console.log(listaMedidores);
 
 
-    if (LecturasPorMedidor.length > 0)
-      for (let i = 0; i < listaMedidores.length; i++) {
-        for (let j = 0; j < LecturasPorMedidor.length; j++) {
-          if (listaMedidores[i].sourceId === LecturasPorMedidor[j].sourceId && listaMedidores[i].funcionalidad === tipoMedidor) {
-            TotalEnergia += LecturasPorMedidor[j].totalLecturaActiva;
+    for (let j = 0; j < LecturasPorMedidor.length; j++) {
+      console.log("Energia solar: " + LecturasPorMedidor[j].totalEnergiaFotovoltaicaActivaConsumida);
 
-          }
-        }
-      }
+      TotalEnergia += LecturasPorMedidor[j].totalEnergiaFotovoltaicaActivaConsumida;
+    }
 
     return TotalEnergia;
   }
@@ -1496,10 +1556,9 @@ export class FormulationService {
   async energiaActivaConsumidaPorClientes(LecturasPorMedidor: LecturasPorContrato[]) {
     let totalEnergia: number = 0;
     for (let i = 0; i < LecturasPorMedidor.length; i++) {
-      for (let j = 0; j < LecturasPorMedidor[i].medidor.length; j++) {
-        totalEnergia += LecturasPorMedidor[i].medidor[j].ConsumoExterno;
-      }
+      totalEnergia += LecturasPorMedidor[i].totalLecturaActivaAjustada;
     }
+    console.log(totalEnergia);
 
     return totalEnergia;
   }

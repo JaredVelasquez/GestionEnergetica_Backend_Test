@@ -16,6 +16,7 @@ export namespace viewOf {
   export const GET_MANUAL_REGISTERS = `SELECT * FROM dbo.GetRegistrosManuales`;
   export const GET_MANUAL_INVOICE_DETAIL = `SELECT * FROM dbo.GetFacturasManuales`;
   export const GET_IONDATA = `SELECT *, dateadd(hour,-6,TimestampUTC) Fecha FROM  dbo.GetIONDATA `;
+  export const GET_SOURCE_TEST = `SELECT * FROM Medidor WHERE estado = 1 AND sourceId != 0 ORDER BY sourceId`;
   export const GET_SOURCE = `SELECT * FROM ION_Data.dbo.Source where ID != 5 and  ID != 4 and  ID != 3 and  ID != 1  and  ID != 2
 
   and ID != 32 and ID != 33 and ID != 34

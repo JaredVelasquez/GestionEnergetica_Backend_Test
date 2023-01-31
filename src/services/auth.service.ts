@@ -48,6 +48,9 @@ export class AuthService {
       return error.CREDENTIALS_NOT_REGISTER;
     console.log(user);
 
+    if (!user.estado)
+      return error.DISABLE_USER;
+
     let matchCredencials = await this.jwtService.IdentifyToken(loginInterface)
 
 

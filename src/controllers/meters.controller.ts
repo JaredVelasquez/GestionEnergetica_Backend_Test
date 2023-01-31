@@ -16,6 +16,7 @@ import {viewOf} from '../core/library/views.library';
 import {Medidor} from '../models';
 import {MedidorRepository} from '../repositories';
 
+@authenticate('admin', 'owner')
 export class MetersController {
   constructor(
     @repository(MedidorRepository)

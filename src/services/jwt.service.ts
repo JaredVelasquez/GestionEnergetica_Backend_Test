@@ -76,8 +76,6 @@ export class JWTService {
       }
     }
     return false;
-
-
   }
 
   async ResetPassword(identificator: string, newpassword: string): Promise<string | false> {
